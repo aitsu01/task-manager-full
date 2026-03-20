@@ -11,10 +11,12 @@ use Laravel\Sanctum\HasApiTokens;
 
 
 
+
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens,HasFactory, Notifiable;
+     
     
 
    
@@ -27,6 +29,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role_id',
     ];
 
     /**
@@ -73,7 +76,12 @@ public function isAdmin()
     return $this->role && $this->role->name === 'admin';
 }
 
-
-
-
 }
+
+
+  
+
+
+
+
+

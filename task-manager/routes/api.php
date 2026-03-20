@@ -7,31 +7,37 @@ use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\ProjectTaskController;
 use App\Http\Controllers\Api\DashboardController;
 
-
+/*
+|--------------------------------------------------------------------------
+| PUBLIC ROUTES
+|--------------------------------------------------------------------------
+*/
 
 Route::post('/login', [AuthController::class, 'login']);
 
+/*
+|--------------------------------------------------------------------------
+| PROTECTED ROUTES
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware('auth:sanctum')->group(function () {
+
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::get('/me', function (Request $request) {
         return $request->user();
     });
+
     Route::apiResource('projects', ProjectController::class);
 
     Route::apiResource(
-    'projects.tasks',
-    \App\Http\Controllers\Api\ProjectTaskController::class
-);
+        'projects.tasks',
+        ProjectTaskController::class
+    );
 
-   Route::get('/dashboard', [\App\Http\Controllers\Api\DashboardController::class, 'index']);
-
-
-
-
-    
+    Route::get('/dashboard', [DashboardController::class, 'index']);
 });
-
 
 
 
