@@ -1,0 +1,113 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+
+use App\Models\Project;
+use App\Models\Task;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+
+class DashboardController extends Controller
+{
+
+public function index(Request $request)
+{
+    $user = $request->user();
+
+    $isAdmin = $user->role && $user->role->name === 'admin';
+
+   
+    $projectQuery = Project::query();
+
+    if (! $isAdmin) {
+        $projectQuery->where('user_id', $user->id);
+    }
+
+    $totalProjects = $projectQuery->count();
+
+   
+    $baseTaskQuery = Task::query();
+
+    if (! $isAdmin) {
+        $baseTaskQuery->whereHas('project', function ($q) use ($user) {
+            $q->where('user_id', $user->id);
+        });
+    }
+
+    $totalTasks = (clone $baseTaskQuery)->count();
+
+    
+    $statusCounts = (clone $baseTaskQuery)
+        ->selectRaw('status, COUNT(*) as total')
+        ->groupBy('status')
+        ->pluck('total', 'status');
+
+    $tasksPerStatus = [];
+
+    foreach (['todo', 'doing', 'done'] as $status) {
+
+        $count = $statusCounts[$status] ?? 0;
+
+        $tasksPerStatus[$status] = [
+            'count' => $count,
+            'percentage' => $totalTasks > 0
+                ? round(($count / $totalTasks) * 100, 1)
+                : 0
+        ];
+    }
+
+  
+    $doneTasks = $statusCounts['done'] ?? 0;
+
+    $completionRate = $totalTasks > 0
+        ? round(($doneTasks / $totalTasks) * 100, 1)
+        : 0;
+
+    $overdueTasks = (clone $baseTaskQuery)
+        ->whereDate('due_date', '<', now())
+        ->where('status', '!=', 'done')
+        ->count();
+
+    
+    $recentTasks = (clone $baseTaskQuery)
+        ->latest()
+        ->limit(5)
+        ->get(['id', 'title', 'status', 'due_date']);
+
+   
+
+$weeklyCompletedRaw = (clone $baseTaskQuery)
+    ->where('status', 'done')
+    ->whereDate('updated_at', '>=', now()->subDays(6))
+    ->selectRaw('DATE(updated_at) as date, COUNT(*) as total')
+    ->groupBy('date')
+    ->pluck('total', 'date');
+
+
+$weeklyCompleted = [];
+
+for ($i = 6; $i >= 0; $i--) {
+
+    $date = now()->subDays($i)->format('Y-m-d');
+
+    $weeklyCompleted[] = [
+        'date' => $date,
+        'completed' => $weeklyCompletedRaw[$date] ?? 0
+    ];
+}
+
+    
+
+    return response()->json([
+    'total_projects' => $totalProjects,
+    'total_tasks' => $totalTasks,
+    'completion_rate' => $completionRate,
+    'tasks_per_status' => $tasksPerStatus,
+    'overdue_tasks' => $overdueTasks,
+    'weekly_completed' => $weeklyCompleted,
+    'recent_tasks' => $recentTasks,
+]);
+}
+   
+}
