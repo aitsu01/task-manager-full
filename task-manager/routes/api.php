@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\ProjectTaskController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\AdminUserController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -38,6 +40,17 @@ Route::middleware('auth:sanctum')->group(function () {
     );
 
     Route::get('/dashboard', [DashboardController::class, 'index']);
+
+    Route::middleware(['auth:sanctum'])->group(function () {
+
+    Route::get('/admin/users/pending', [AdminUserController::class, 'pending']);
+
+    Route::patch('/admin/users/{user}/approve', [AdminUserController::class, 'approve']);
+
+});
+
+
+
 });
 
 

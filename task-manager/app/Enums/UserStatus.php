@@ -2,6 +2,7 @@
 
 namespace App\Enums;
 
+
 enum UserStatus: string
 {
     case Pending = 'pending';
