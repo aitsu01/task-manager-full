@@ -4,59 +4,54 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Project;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Http\Resources\ProjectResource;
-
-
+use App\Services\ProjectService;
+use Illuminate\Http\Request;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ProjectController extends Controller
 {
     use AuthorizesRequests;
 
- public function index(Request $request)
-{
-    $query = Project::query();
+    protected $projectService;
 
-    $user = $request->user();
-
-    if (! $user->role || $user->role->name !== 'admin') {
-        $query->where('user_id', $user->id);
+    public function __construct(ProjectService $projectService)
+    {
+        $this->projectService = $projectService;
     }
 
-    return ProjectResource::collection(
-        $query->withCount('tasks')
-              ->latest()
-              ->paginate(10)
-    );
-}
+    public function index(Request $request)
+    {
+        $projects = $this->projectService
+            ->getPaginatedProjects($request->user());
 
-   public function store(StoreProjectRequest $request)
-{
-    $project = $request->user()->projects()->create(
-        $request->validated()
-    );
+        return ProjectResource::collection($projects);
+    }
 
-    return new ProjectResource($project);
-}
+    public function store(StoreProjectRequest $request)
+    {
+        $project = $this->projectService
+            ->createProject($request->user(), $request->validated());
 
-    
+        return new ProjectResource($project);
+    }
+
     public function show(Project $project)
-{
-    $this->authorize('view', $project);
+    {
+        $this->authorize('view', $project);
 
-    return new ProjectResource($project);
-}
+        return new ProjectResource($project);
+    }
 
     public function update(UpdateProjectRequest $request, Project $project)
     {
         $this->authorize('update', $project);
 
-        $project->update($request->validated());
+        $project = $this->projectService
+            ->updateProject($project, $request->validated());
 
-        /*return response()->json($project);*/
         return new ProjectResource($project);
     }
 
@@ -64,11 +59,10 @@ class ProjectController extends Controller
     {
         $this->authorize('delete', $project);
 
-        $project->delete();
+        $this->projectService->deleteProject($project);
 
         return response()->json([
             'message' => 'Project deleted successfully'
         ]);
     }
-
 }
