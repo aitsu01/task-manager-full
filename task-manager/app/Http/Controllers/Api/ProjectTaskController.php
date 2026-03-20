@@ -9,66 +9,51 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\TaskResource;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Validation\Rule;
-
-
+use App\Services\TaskService;
 
 class ProjectTaskController extends Controller
 {
     use AuthorizesRequests;
 
-    /*public function index(Project $project)
+    protected $taskService;
+
+    public function __construct(TaskService $taskService)
+    {
+        $this->taskService = $taskService;
+    }
+
+    public function index(Project $project)
     {
         $this->authorize('view', $project);
 
-        return TaskResource::collection(
-            $project->tasks()->latest()->paginate(10)
-        );
-    }*/
-        public function index(Request $request, Project $project)
-{
-    $this->authorize('view', $project);
+        $tasks = $this->taskService
+            ->getPaginatedTasks($project);
 
-    $query = $project->tasks()->latest();
-
-    // 🔎 Filtro per status
-    if ($request->filled('status')) {
-        $query->where('status', $request->status);
+        return TaskResource::collection($tasks);
     }
 
-    // 🔍 Ricerca testuale
-    if ($request->filled('search')) {
-        $query->where(function ($q) use ($request) {
-            $q->where('title', 'like', '%' . $request->search . '%')
-              ->orWhere('description', 'like', '%' . $request->search . '%');
-        });
+    public function store(Request $request, Project $project)
+    {
+        $this->authorize('update', $project);
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'status' => ['required', Rule::in(['todo', 'doing', 'done'])],
+            'due_date' => 'nullable|date'
+        ]);
+
+        $task = $this->taskService
+            ->createTask($project, $validated);
+
+        return new TaskResource($task);
     }
-
-    return TaskResource::collection(
-        $query->paginate(10)
-    );
-}
-
- public function store(Request $request, Project $project)
-{
-    $this->authorize('update', $project);
-
-    $validated = $request->validate([
-        'title' => 'required|string|max:255',
-        'description' => 'nullable|string',
-        'status' => ['required', Rule::in(['todo', 'doing', 'done'])],
-        'due_date' => 'nullable|date'
-    ]);
-
-    $task = $project->tasks()->create($validated);
-
-    return new TaskResource($task);
-}
 
     public function show(Project $project, Task $task)
     {
         $this->authorize('view', $project);
 
-        if ($task->project_id !== $project->id) {
+        if (!$this->taskService->belongsToProject($task, $project)) {
             abort(404);
         }
 
@@ -79,18 +64,19 @@ class ProjectTaskController extends Controller
     {
         $this->authorize('update', $project);
 
-        if ($task->project_id !== $project->id) {
+        if (!$this->taskService->belongsToProject($task, $project)) {
             abort(404);
         }
 
-       $validated = $request->validate([
-    'title' => 'sometimes|string|max:255',
-    'description' => 'nullable|string',
-    'status' => ['sometimes', Rule::in(['todo', 'doing', 'done'])],
-    'due_date' => 'nullable|date'
-]);
+        $validated = $request->validate([
+            'title' => 'sometimes|string|max:255',
+            'description' => 'nullable|string',
+            'status' => ['sometimes', Rule::in(['todo', 'doing', 'done'])],
+            'due_date' => 'nullable|date'
+        ]);
 
-        $task->update($validated);
+        $task = $this->taskService
+            ->updateTask($task, $validated);
 
         return new TaskResource($task);
     }
@@ -99,11 +85,11 @@ class ProjectTaskController extends Controller
     {
         $this->authorize('delete', $project);
 
-        if ($task->project_id !== $project->id) {
+        if (!$this->taskService->belongsToProject($task, $project)) {
             abort(404);
         }
 
-        $task->delete();
+        $this->taskService->deleteTask($task);
 
         return response()->json([
             'message' => 'Task deleted successfully'
