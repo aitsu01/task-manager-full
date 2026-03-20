@@ -98,6 +98,12 @@ const login = async () => {
         </button>
 
       </form>
+      <p class="text-sm text-center mt-6">
+  Non hai un account?
+  <router-link to="/register" class="text-blue-600 hover:underline">
+    Registrati
+  </router-link>
+</p>
 
     </div>
 

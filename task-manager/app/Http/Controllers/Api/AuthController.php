@@ -10,6 +10,10 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
+use App\Enums\UserStatus;
+use Illuminate\Validation\Rule;
+
+
 
 class AuthController extends Controller
 {
@@ -30,6 +34,16 @@ class AuthController extends Controller
 
     $user = auth()->user();
 
+    
+
+if ($user->status !== UserStatus::Approved->value) {
+    auth()->logout();
+
+    return response()->json([
+        'message' => 'Account in attesa di approvazione'
+    ], 403);
+}
+
     $token = $user->createToken('api-token')->plainTextToken;
 
     return response()->json([
@@ -45,4 +59,27 @@ class AuthController extends Controller
             'message' => 'Logged out'
         ]);
     }
+
+
+
+public function register(Request $request)
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email',
+        'password' => 'required|min:6|confirmed',
+    ]);
+
+    $user = User::create([
+        'name' => $validated['name'],
+        'email' => $validated['email'],
+        'password' => Hash::make($validated['password']),
+        'status' => UserStatus::Pending->value,
+        'role_id' => null,
+    ]);
+
+    return response()->json([
+        'message' => 'Registrazione completata. Account in attesa di approvazione.'
+    ], 201);
+}
 }

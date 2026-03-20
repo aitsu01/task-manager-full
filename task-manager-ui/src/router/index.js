@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router"
 import Dashboard from "../views/Dashboard.vue"
 import LoginView from "../views/LoginView.vue"
+import RegisterView from "../views/RegisterView.vue"
+
 
 const routes = [
   {
@@ -16,6 +18,12 @@ const routes = [
     component: Dashboard,
     meta: { requiresAuth: true },
   },
+ 
+
+{
+  path: "/register",
+  component: RegisterView
+},
 ]
 
 const router = createRouter({
