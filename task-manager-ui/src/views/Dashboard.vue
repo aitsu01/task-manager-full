@@ -1,21 +1,22 @@
 <script setup>
 import { ref, onMounted } from "vue"
+import { useRouter } from "vue-router"
 import api from "../services/api"
 
 const dashboard = ref(null)
 const loading = ref(true)
 const error = ref(null)
 
+const router = useRouter()
+
+const logout = () => {
+  localStorage.removeItem("token")
+  router.push("/login")
+}
+
 onMounted(async () => {
   try {
-    const token = localStorage.getItem("token")
-
-    const response = await api.get("/dashboard", {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-
+    const response = await api.get("/dashboard")
     dashboard.value = response.data
   } catch (err) {
     error.value = "Errore nel caricamento dashboard"
@@ -28,7 +29,15 @@ onMounted(async () => {
 <template>
   <div class="min-h-screen bg-gray-100 p-10">
 
+   <button
+      @click="logout"
+      class="mb-6 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+    >
+      Logout
+    </button>
+
     <h1 class="text-3xl font-bold mb-8">Dashboard</h1>
+
 
     <!-- Loading -->
     <div v-if="loading" class="text-gray-500">Caricamento...</div>
@@ -133,3 +142,4 @@ onMounted(async () => {
     </div>
   </div>
 </template>
+
