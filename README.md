@@ -55,6 +55,22 @@ Full Stack SaaS-style Task Management application built with:
 
 ---
 
+
+##  Collaboration System
+
+Projects now support multi-user collaboration:
+
+- Owner / Manager / Member roles
+- Role-based permissions (Laravel Policies)
+- Add / remove members
+- Update member roles
+- Admin override access
+
+Built with:
+- Many-to-many pivot (project_user)
+- Policy-driven authorization
+- Service Layer architecture
+
 ###  Architecture
 
 #### Backend
