@@ -1,210 +1,128 @@
-#  Task Manager SaaS (Laravel + Vue)
+This project was built to demonstrate:
 
-Fullstack Task Management System built with:
+Clean backend architecture
+Real-world SaaS workflow
+Authentication & role management
+Full-stack integration
+Professional repository structure
 
--  Laravel 11 (REST API)
--  Vue 3 + Vite (Dashboard UI)
--  Role-based access (Admin / Manager / User)
--  Real-time Dashboard Analytics
--  Token Authentication (Sanctum)
--  SaaS-ready architecture (Monorepo)
 
----
 
-#  Project Structure
 
-#  Task Manager SaaS (Laravel + Vue)
 
-Fullstack Task Management System built with:
+#  Task Manager SaaS (Full Stack)
 
--  Laravel 11 (REST API)
--  Vue 3 + Vite (Dashboard UI)
--  Role-based access (Admin / Manager / User)
--  Real-time Dashboard Analytics
--  Token Authentication (Sanctum)
--  SaaS-ready architecture (Monorepo)
+Full Stack SaaS-style Task Management application built with:
+
+-  Laravel 11 (API Backend)
+-  Laravel Sanctum (Authentication)
+-  Service Layer Architecture
+-  Vue 3 + Vite (Frontend SPA)
+-  TailwindCSS (UI)
+-  MySQL Database
 
 ---
 
-#  Project Structure
+##  Features
+
+###  Authentication
+- Login / Logout
+- Registration with approval workflow
+- Token-based authentication (Sanctum)
+- Route protection (SPA guards)
+- Global 401 auto-redirect
+
+---
+
+###  Dashboard
+- Total projects
+- Total tasks
+- Completion rate (%)
+- Tasks per status (with percentages)
+- Overdue tasks counter
+- Weekly productivity trend (last 7 days)
+- Recent tasks list
+
+---
+
+###  Admin Panel
+- View all users
+- Approve / Reject new registrations
+- Assign roles (Admin / User / Manager)
+- Update existing user roles
+- Delete users
+- Status badges (pending / approved / rejected)
+
+---
+
+###  Architecture
+
+#### Backend
+- RESTful API
+- Service Layer (DashboardService, ProjectService, TaskService)
+- Role-based access control
+- Clean separation of concerns
+- Eloquent relationships
+- Soft-delete ready structure
+
+#### Frontend
+- Vue 3 Composition API
+- Axios service abstraction
+- Route guards
+- SaaS-style layout with persistent sidebar
+- Role-based UI rendering
+
+---
+
+##  Project Structure
+
+
+
+
+
+task-manager-full/
+│
+├── task-manager-api/ # Laravel Backend
+│
+└── task-manager-ui/ # Vue 3 Frontend
+
 
 
 ---
 
-#  Backend (Laravel API)
+##  Installation
 
-## Features
+### Backend
 
-✅ Authentication (Login / Token-based)  
-✅ Role-based authorization (Admin, Manager, User)  
-✅ Project CRUD  
-✅ Nested Task CRUD (`/projects/{id}/tasks`)  
-✅ Soft Deletes  
-✅ Dynamic filtering (status, due_date)  
-✅ Pagination  
-✅ API Resources  
-✅ Policies for access control  
-
----
-
-## 📊 Advanced Dashboard Endpoint
-
-`GET /api/dashboard`
-
-Returns:
-
-- Total Projects
-- Total Tasks
-- Completion Rate (%)
-- Tasks per Status (count + percentage)
-- Overdue Tasks
-- Weekly Productivity Trend (last 7 days)
-- Recent Tasks
-
-Example response:
-
-```json
-{
-  "total_projects": 8,
-  "total_tasks": 32,
-  "completion_rate": 37.5,
-  "tasks_per_status": {
-    "todo": { "count": 8, "percentage": 25 },
-    "doing": { "count": 12, "percentage": 37.5 },
-    "done": { "count": 12, "percentage": 37.5 }
-  },
-  "overdue_tasks": 18
-}
-
-
-Frontend (Vue 3 + Vite)
-Features
-
-✅ Login via API
-✅ Token storage
-✅ Dashboard page
-✅ Live API integration
-✅ Tailwind CSS styling
-✅ Weekly productivity visualization
-
-
-
-Authentication
-
-Token-based authentication using Laravel Sanctum.
-
-Example login:
-
-POST /api/login
-
-Returns:
-
-{
-  "token": "...",
-  "user": { ... }
-}
-
-Use token in headers:
-
-Authorization: Bearer YOUR_TOKEN
-Accept: application/json
-🗄 Database Structure
-Users
-
-id
-
-role_id
-
-name
-
-email
-
-Roles
-
-admin
-
-manager
-
-user
-
-Projects
-
-id
-
-name
-
-description
-
-user_id
-
-Tasks
-
-id
-
-title
-
-description
-
-status (todo, doing, done)
-
-due_date
-
-assigned_to
-
-project_id
-
-soft deletes
-
- SaaS Concepts Implemented
-
-Multi-user architecture
-
-Role-based visibility
-
-Nested resources
-
-Aggregated analytics
-
-Percentage metrics
-
-Weekly trend calculations
-
-Clean API design
-
-Monorepo architecture
-
- How To Run
-Backend
-cd backend
+```bash
+cd task-manager-api
 composer install
 cp .env.example .env
 php artisan key:generate
-php artisan migrate --seed
+php artisan migrate
 php artisan serve
-Frontend
-cd frontend
-npm install
-npm run dev
- Next Improvements (Roadmap)
 
- Project progress % tracking
 
- Kanban board UI
-
- Assign users to tasks
-
- Email notifications
-
- Docker setup
-
- Production deployment
-
- CI/CD pipeline
 
 
 
 
 ---
+
+##  Installation
+
+### Backend
+
+```bash
+cd task-manager-api
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+php artisan serve
+
+
+
 
 
 
