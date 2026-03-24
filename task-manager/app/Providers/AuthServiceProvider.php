@@ -9,8 +9,8 @@ use App\Policies\ProjectPolicy;
 class AuthServiceProvider extends ServiceProvider
 {
     protected $policies = [
-        Project::class => ProjectPolicy::class,
-    ];
+    \App\Models\Project::class => \App\Policies\ProjectPolicy::class,
+];
 
     public function boot(): void
     {

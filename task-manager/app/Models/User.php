@@ -63,7 +63,9 @@ class User extends Authenticatable
 
 public function projects()
 {
-    return $this->hasMany(Project::class);
+    return $this->belongsToMany(Project::class)
+        ->withPivot('role')
+        ->withTimestamps();
 }
 
 public function assignedTasks()
@@ -76,6 +78,9 @@ public function isAdmin()
 {
     return $this->role && $this->role->name === 'admin';
 }
+
+
+
 
 }
 

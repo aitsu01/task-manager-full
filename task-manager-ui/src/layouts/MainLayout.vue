@@ -48,6 +48,10 @@ const logout = () => {
           Admin Panel
         </router-link>
 
+        <router-link to="/projects" class="block px-4 py-2 rounded hover:bg-gray-200">
+         Projects
+        </router-link>
+
       </nav>
 
       <!-- Logout -->

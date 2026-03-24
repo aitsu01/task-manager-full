@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\ProjectTaskController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\AdminUserController;
+ use App\Http\Controllers\Api\ProjectMemberController;
 
 /*
 |--------------------------------------------------------------------------
@@ -43,6 +44,23 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/admin/users/{user}/reject', [AdminUserController::class, 'reject']);
     Route::patch('/admin/users/{user}/role', [AdminUserController::class, 'updateRole']);
     Route::delete('/admin/users/{user}', [AdminUserController::class, 'destroy']);
+
+
+   
+
+Route::prefix('projects/{project}')->group(function () {
+
+    Route::get('/members', [ProjectMemberController::class, 'index']);
+    Route::post('/members', [ProjectMemberController::class, 'store']);
+    Route::patch('/members/{user}', [ProjectMemberController::class, 'update']);
+    Route::delete('/members/{user}', [ProjectMemberController::class, 'destroy']);
+
+});
+
+
+
+
+
 });
 
 

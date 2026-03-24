@@ -10,9 +10,11 @@ class ProjectService
     {
         $query = Project::query();
 
-        // Se NON admin → solo i suoi progetti
+        // Admin vede tutto
         if (!$user->role || $user->role->name !== 'admin') {
-            $query->where('user_id', $user->id);
+            $query->whereHas('users', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            });
         }
 
         return $query
@@ -23,7 +25,17 @@ class ProjectService
 
     public function createProject($user, array $data)
     {
-        return $user->projects()->create($data);
+        $project = Project::create([
+            'name' => $data['name'],
+            'description' => $data['description'] ?? null,
+        ]);
+
+        // Creator diventa owner
+        $project->users()->attach($user->id, [
+            'role' => 'owner'
+        ]);
+
+        return $project;
     }
 
     public function updateProject(Project $project, array $data)

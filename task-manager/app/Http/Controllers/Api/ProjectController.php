@@ -31,12 +31,14 @@ class ProjectController extends Controller
     }
 
     public function store(StoreProjectRequest $request)
-    {
-        $project = $this->projectService
-            ->createProject($request->user(), $request->validated());
+{
+    $this->authorize('create', Project::class);
 
-        return new ProjectResource($project);
-    }
+    $project = $this->projectService
+        ->createProject($request->user(), $request->validated());
+
+    return new ProjectResource($project);
+}
 
     public function show(Project $project)
     {
