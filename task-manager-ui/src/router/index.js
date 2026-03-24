@@ -2,6 +2,9 @@ import { createRouter, createWebHistory } from "vue-router"
 import Dashboard from "../views/Dashboard.vue"
 import LoginView from "../views/LoginView.vue"
 import RegisterView from "../views/RegisterView.vue"
+import AdminUsersView from "../views/AdminUsersView.vue"
+
+
 
 
 const routes = [
@@ -24,6 +27,13 @@ const routes = [
   path: "/register",
   component: RegisterView
 },
+
+{
+  path: "/admin/users",
+  component: AdminUsersView
+},
+
+
 ]
 
 const router = createRouter({
@@ -41,6 +51,12 @@ router.beforeEach((to) => {
   if (to.path === "/login" && token) {
     return "/dashboard"
   }
+
+  if (to.path.startsWith("/admin") && !localStorage.getItem("token")) {
+  return "/login"
+}
+
+
 })
 
 export default router

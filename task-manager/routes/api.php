@@ -1,13 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthController;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\ProjectTaskController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\AdminUserController;
-
 
 /*
 |--------------------------------------------------------------------------
@@ -34,24 +33,16 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('projects', ProjectController::class);
 
-    Route::apiResource(
-        'projects.tasks',
-        ProjectTaskController::class
-    );
+    Route::apiResource('projects.tasks', ProjectTaskController::class);
 
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
-    Route::middleware(['auth:sanctum'])->group(function () {
-
-    Route::get('/admin/users/pending', [AdminUserController::class, 'pending']);
-
+    // ADMIN ROUTES
+    Route::get('/admin/users', [AdminUserController::class, 'index']);
     Route::patch('/admin/users/{user}/approve', [AdminUserController::class, 'approve']);
-
+    Route::patch('/admin/users/{user}/reject', [AdminUserController::class, 'reject']);
+    Route::patch('/admin/users/{user}/role', [AdminUserController::class, 'updateRole']);
+    Route::delete('/admin/users/{user}', [AdminUserController::class, 'destroy']);
 });
-
-
-
-});
-
 
 

@@ -21,7 +21,11 @@ const login = async () => {
       password: password.value
     })
 
+    // SALVIAMO TUTTO QUI
     localStorage.setItem("token", response.data.token)
+    localStorage.setItem("user", JSON.stringify(response.data.user))
+
+    
     router.push("/dashboard")
 
   } catch (err) {
@@ -30,6 +34,8 @@ const login = async () => {
     loading.value = false
   }
 }
+
+
 </script>
 
 <template>
