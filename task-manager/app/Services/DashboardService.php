@@ -71,9 +71,9 @@ class DashboardService
 
         // WEEKLY COMPLETED (ultimi 7 giorni)
 $weeklyCompletedRaw = (clone $baseTaskQuery)
-    ->where('status', 'done')
-    ->whereDate('updated_at', '>=', now()->subDays(6))
-    ->selectRaw('DATE(updated_at) as date, COUNT(*) as completed')
+    ->whereNotNull('completed_at')
+    ->whereDate('completed_at', '>=', now()->subDays(6))
+    ->selectRaw('DATE(completed_at) as date, COUNT(*) as completed')
     ->groupBy('date')
     ->pluck('completed', 'date');
 

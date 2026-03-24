@@ -19,11 +19,30 @@ class TaskService
         return $project->tasks()->create($data);
     }
 
-    public function updateTask(Task $task, array $data)
-    {
-        $task->update($data);
-        return $task;
+    public function updateTask($task, array $data)
+{
+    $originalStatus = $task->status;
+
+    $task->fill($data);
+
+    // Se cambia stato
+    if (isset($data['status'])) {
+
+        // Se diventa done
+        if ($data['status'] === 'done' && $originalStatus !== 'done') {
+            $task->completed_at = now();
+        }
+
+        // Se torna indietro da done
+        if ($originalStatus === 'done' && $data['status'] !== 'done') {
+            $task->completed_at = null;
+        }
     }
+
+    $task->save();
+
+    return $task;
+}
 
     public function deleteTask(Task $task)
     {
