@@ -7,7 +7,10 @@ use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\ProjectTaskController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\AdminUserController;
- use App\Http\Controllers\Api\ProjectMemberController;
+use App\Http\Controllers\Api\ProjectMemberController;
+use App\Http\Controllers\Api\TaskController;
+use App\Http\Controllers\Api\MyTaskController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -38,6 +41,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
+    Route::get('/my-tasks', [MyTaskController::class, 'index']);
+
+    Route::apiResource('tasks', TaskController::class);
+    
+
     // ADMIN ROUTES
     Route::get('/admin/users', [AdminUserController::class, 'index']);
     Route::patch('/admin/users/{user}/approve', [AdminUserController::class, 'approve']);
@@ -54,6 +62,9 @@ Route::prefix('projects/{project}')->group(function () {
     Route::post('/members', [ProjectMemberController::class, 'store']);
     Route::patch('/members/{user}', [ProjectMemberController::class, 'update']);
     Route::delete('/members/{user}', [ProjectMemberController::class, 'destroy']);
+
+
+
 
 });
 

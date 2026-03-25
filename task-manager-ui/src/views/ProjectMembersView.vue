@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue"
+import { ref, onMounted, computed } from "vue"
 import { useRoute } from "vue-router"
 import api from "../services/api"
 import MainLayout from "../layouts/MainLayout.vue"
@@ -11,8 +11,14 @@ const members = ref([])
 const loading = ref(true)
 const newMemberId = ref("")
 const newRole = ref("member")
+
 const currentUser = JSON.parse(localStorage.getItem("user"))
 
+/*
+|--------------------------------------------------------------------------
+| Fetch Members
+|--------------------------------------------------------------------------
+*/
 const fetchMembers = async () => {
   try {
     const res = await api.get(`/projects/${projectId}/members`)
@@ -24,6 +30,24 @@ const fetchMembers = async () => {
   }
 }
 
+/*
+|--------------------------------------------------------------------------
+| Computed: isOwner
+|--------------------------------------------------------------------------
+*/
+const isOwner = computed(() => {
+  const me = members.value.find(
+    member => member.id === currentUser.id
+  )
+
+  return me?.role === "owner"
+})
+
+/*
+|--------------------------------------------------------------------------
+| Add Member
+|--------------------------------------------------------------------------
+*/
 const addMember = async () => {
   if (!newMemberId.value) return
 
@@ -34,32 +58,49 @@ const addMember = async () => {
     })
 
     newMemberId.value = ""
+    newRole.value = "member"
     fetchMembers()
 
   } catch (err) {
-
     if (err.response?.status === 400) {
       alert("Utente già membro del progetto")
     } else {
-      alert("Errore durante aggiunta membro,id menbro non esistente")
+      alert("Errore durante aggiunta membro")
     }
-
   }
 }
 
+/*
+|--------------------------------------------------------------------------
+| Update Role
+|--------------------------------------------------------------------------
+*/
 const updateRole = async (member) => {
-  await api.patch(`/projects/${projectId}/members/${member.id}`, {
-    role: member.role
-  })
+  try {
+    await api.patch(`/projects/${projectId}/members/${member.id}`, {
+      role: member.role
+    })
 
-  fetchMembers()
+    fetchMembers()
+  } catch (err) {
+    console.error(err)
+  }
 }
 
+/*
+|--------------------------------------------------------------------------
+| Remove Member
+|--------------------------------------------------------------------------
+*/
 const removeMember = async (member) => {
   if (!confirm("Rimuovere questo membro?")) return
 
-  await api.delete(`/projects/${projectId}/members/${member.id}`)
-  fetchMembers()
+  try {
+    await api.delete(`/projects/${projectId}/members/${member.id}`)
+    fetchMembers()
+  } catch (err) {
+    console.error(err)
+  }
 }
 
 onMounted(fetchMembers)
@@ -67,9 +108,17 @@ onMounted(fetchMembers)
 
 <template>
   <MainLayout>
+
     <div class="flex justify-between items-center mb-8">
       <h1 class="text-3xl font-bold">Project Members</h1>
     </div>
+
+    <p
+      v-if="!isOwner"
+      class="text-gray-500 text-sm mb-4"
+    >
+      Solo l'owner del progetto può gestire i membri.
+    </p>
 
     <div v-if="loading">Caricamento...</div>
 
@@ -81,6 +130,7 @@ onMounted(fetchMembers)
     >
       <div class="flex justify-between items-center">
 
+        <!-- INFO -->
         <div>
           <p class="font-semibold">{{ member.name }}</p>
           <p class="text-gray-500 text-sm">{{ member.email }}</p>
@@ -97,9 +147,11 @@ onMounted(fetchMembers)
           </span>
         </div>
 
-        <!-- Solo se non owner -->
-        <div v-if="member.role !== 'owner'" class="flex gap-2 items-center">
-
+        <!-- ACTIONS (SOLO OWNER) -->
+        <div
+          v-if="member.role !== 'owner' && isOwner"
+          class="flex gap-2 items-center"
+        >
           <select
             v-model="member.role"
             class="border rounded px-2 py-1"
@@ -121,13 +173,16 @@ onMounted(fetchMembers)
           >
             Rimuovi
           </button>
-
         </div>
+
       </div>
     </div>
 
-    <!-- AGGIUNGI MEMBRO -->
-    <div class="bg-white p-6 rounded-xl shadow mt-6">
+    <!-- AGGIUNGI MEMBRO (SOLO OWNER) -->
+    <div
+      v-if="isOwner"
+      class="bg-white p-6 rounded-xl shadow mt-6"
+    >
       <h2 class="text-lg font-semibold mb-4">Aggiungi membro</h2>
 
       <div class="flex gap-3">

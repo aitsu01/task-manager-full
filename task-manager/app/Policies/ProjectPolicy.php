@@ -35,21 +35,19 @@ class ProjectPolicy
     /**
      * Può modificare se è owner o manager
      */
-    public function update(User $user, Project $project)
-    {
-        if ($user->role && $user->role->name === 'admin') {
-            return true;
-        }
-
-        return $project->users()
-            ->where('user_id', $user->id)
-            ->whereIn('role', ['owner', 'manager'])
-            ->exists();
+  public function update(User $user, Project $project)
+{
+    // Admin globale può sempre
+    if ($user->role && $user->role->name === 'admin') {
+        return true;
     }
 
-    /**
-     * Solo owner può eliminare
-     */
+    // Solo owner del progetto
+    return $project->users()
+        ->where('user_id', $user->id)
+        ->wherePivot('role', 'owner')
+        ->exists();
+}
     public function delete(User $user, Project $project)
     {
         if ($user->role && $user->role->name === 'admin') {

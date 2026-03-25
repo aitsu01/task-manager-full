@@ -4,9 +4,11 @@
 
 namespace App\Models;
 
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 
 class Task extends Model
 {
@@ -34,6 +36,8 @@ class Task extends Model
 
     public function assignedUser()
 {
-    return $this->belongsTo(\App\Models\User::class, 'assigned_user_id');
+    return $this->belongsTo(User::class, 'assigned_user_id');
 }
+
+ 
 }
