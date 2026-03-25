@@ -27,13 +27,24 @@ const fetchMembers = async () => {
 const addMember = async () => {
   if (!newMemberId.value) return
 
-  await api.post(`/projects/${projectId}/members`, {
-    user_id: newMemberId.value,
-    role: newRole.value
-  })
+  try {
+    await api.post(`/projects/${projectId}/members`, {
+      user_id: newMemberId.value,
+      role: newRole.value
+    })
 
-  newMemberId.value = ""
-  fetchMembers()
+    newMemberId.value = ""
+    fetchMembers()
+
+  } catch (err) {
+
+    if (err.response?.status === 400) {
+      alert("Utente già membro del progetto")
+    } else {
+      alert("Errore durante aggiunta membro,id menbro non esistente")
+    }
+
+  }
 }
 
 const updateRole = async (member) => {

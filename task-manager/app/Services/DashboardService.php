@@ -14,20 +14,36 @@ class DashboardService
         // PROJECT QUERY
         $projectQuery = Project::query();
 
-        if (!$isAdmin) {
+        /*if (!$isAdmin) {
             $projectQuery->where('user_id', $user->id);
-        }
+        }*/
+
+            if (!$isAdmin) {
+    $projectQuery->whereHas('users', function ($q) use ($user) {
+        $q->where('user_id', $user->id);
+    });
+}
 
         $totalProjects = $projectQuery->count();
 
         // TASK BASE QUERY
         $baseTaskQuery = Task::query();
 
-        if (!$isAdmin) {
+       /* if (!$isAdmin) {
             $baseTaskQuery->whereHas('project', function ($q) use ($user) {
                 $q->where('user_id', $user->id);
             });
-        }
+        }*/
+
+        if (!$isAdmin) {
+    $baseTaskQuery->whereHas('project.users', function ($q) use ($user) {
+        $q->where('user_id', $user->id);
+    });
+}
+
+    
+
+        
 
         $totalTasks = (clone $baseTaskQuery)->count();
 

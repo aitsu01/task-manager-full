@@ -5,13 +5,6 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-<?php
-
-namespace App\Http\Resources;
-
-use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
-
 class TaskResource extends JsonResource
 {
     public function toArray(Request $request): array
@@ -25,13 +18,12 @@ class TaskResource extends JsonResource
             'due_date' => $this->due_date,
             'completed_at' => $this->completed_at,
 
-            // 👤 Assigned user
             'assigned_user' => $this->whenLoaded('assignedUser', function () {
-                return [
+                return $this->assignedUser ? [
                     'id' => $this->assignedUser->id,
                     'name' => $this->assignedUser->name,
                     'email' => $this->assignedUser->email,
-                ];
+                ] : null;
             }),
 
             'created_at' => $this->created_at,
@@ -39,5 +31,4 @@ class TaskResource extends JsonResource
         ];
     }
 }
-
 
