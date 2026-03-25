@@ -22,26 +22,29 @@ class ProjectTaskController extends Controller
         $this->taskService = $taskService;
     }
 
-    public function index(Project $project)
-    {
-        $this->authorize('view', $project);
+   public function index(Project $project)
+{
+    $this->authorize('view', $project);
 
-        $tasks = $this->taskService
-            ->getPaginatedTasks($project);
+    $tasks = $this->taskService
+        ->getPaginatedTasks($project);
 
-        return TaskResource::collection($tasks);
-    }
+    $tasks->load('assignedUser');
+
+    return TaskResource::collection($tasks);
+}
 
     public function store(Request $request, Project $project)
     {
         $this->authorize('update', $project);
 
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'status' => ['required', Rule::in(['todo', 'doing', 'done'])],
-            'due_date' => 'nullable|date'
-        ]);
+    'title' => 'sometimes|string|max:255',
+    'description' => 'nullable|string',
+    'status' => ['sometimes', Rule::in(['todo', 'doing', 'done'])],
+    'due_date' => 'nullable|date',
+    'assigned_user_id' => 'nullable|exists:users,id'
+]);
 
         $task = $this->taskService
             ->createTask($project, $validated);

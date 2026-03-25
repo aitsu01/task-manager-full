@@ -70,7 +70,8 @@ public function projects()
 
 public function assignedTasks()
 {
-    return $this->hasMany(Task::class, 'assigned_to');
+    /*return $this->hasMany(Task::class, 'assigned_to');*/
+     return $this->hasMany(Task::class, 'assigned_user_id');
 }
 
 
@@ -78,6 +79,8 @@ public function isAdmin()
 {
     return $this->role && $this->role->name === 'admin';
 }
+
+
 
 
 
