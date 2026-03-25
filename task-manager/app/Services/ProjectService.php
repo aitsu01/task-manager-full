@@ -18,26 +18,28 @@ class ProjectService
         }
 
         return $query
+             ->with(['creator'])
+
             ->withCount('tasks')
             ->latest()
             ->paginate($perPage);
     }
 
-    public function createProject($user, array $data)
-    {
-        $project = Project::create([
-            'name' => $data['name'],
-            'description' => $data['description'] ?? null,
-        ]);
+   public function createProject($user, array $data)
+{
+    $project = Project::create([
+        'name' => $data['name'],
+        'description' => $data['description'] ?? null,
+        'deadline' => $data['deadline'] ?? null,
+        'creator_id' => $user->id,
+    ]);
 
-        // Creator diventa owner
-        $project->users()->attach($user->id, [
-            'role' => 'owner'
-        ]);
+    $project->users()->attach($user->id, [
+        'role' => 'owner'
+    ]);
 
-        return $project;
-    }
-
+    return $project;
+}
     public function updateProject(Project $project, array $data)
     {
         $project->update($data);

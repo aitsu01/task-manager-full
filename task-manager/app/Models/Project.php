@@ -7,6 +7,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+
 class Project extends Model
 {
     use HasFactory;
@@ -14,7 +15,9 @@ class Project extends Model
     protected $fillable = [
         'name',
         'description',
-        'user_id'
+        'creator_id',
+        'deadline'
+
     ];
 
     public function owner()
@@ -33,4 +36,15 @@ class Project extends Model
         ->withPivot('role')
         ->withTimestamps();
 }
+
+
+
+public function creator()
+{
+    return $this->belongsTo(User::class, 'creator_id');
+}
+
+
+
+
 }

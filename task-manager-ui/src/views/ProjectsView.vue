@@ -1,14 +1,34 @@
 <script setup>
-import { ref, onMounted } from "vue"
+import { ref, onMounted, computed } from "vue"
 import api from "../services/api"
 import MainLayout from "../layouts/MainLayout.vue"
 
 const projects = ref([])
 const loading = ref(true)
 
+const showModal = ref(false)
+const creating = ref(false)
+const error = ref(null)
+
+const newProject = ref({
+  name: "",
+  description: "",
+  deadline: ""
+})
+
+const currentUser = JSON.parse(localStorage.getItem("user"))
+const canCreateProject = currentUser?.status === "approved"
+
+/*
+|--------------------------------------------------------------------------
+| Fetch Projects
+|--------------------------------------------------------------------------
+*/
 const fetchProjects = async () => {
   try {
+
     const res = await api.get("/projects")
+    
     projects.value = res.data.data
   } catch (err) {
     console.error(err)
@@ -18,40 +38,203 @@ const fetchProjects = async () => {
 }
 
 onMounted(fetchProjects)
+
+/*
+|--------------------------------------------------------------------------
+| Split Projects
+|--------------------------------------------------------------------------
+*/
+const ownedProjects = computed(() =>
+  projects.value.filter(p => p.role === "owner")
+)
+
+const sharedProjects = computed(() =>
+  projects.value.filter(p => p.role !== "owner")
+)
+
+/*
+|--------------------------------------------------------------------------
+| Create Project
+|--------------------------------------------------------------------------
+*/
+const createProject = async () => {
+  if (!newProject.value.name) {
+    error.value = "Il nome progetto è obbligatorio"
+    return
+  }
+
+  creating.value = true
+  error.value = null
+
+  try {
+    await api.post("/projects", newProject.value)
+
+    showModal.value = false
+    newProject.value = { name: "", description: "", deadline: "" }
+
+    fetchProjects()
+
+  } catch (err) {
+    error.value = "Errore durante creazione progetto"
+  } finally {
+    creating.value = false
+  }
+}
 </script>
 
 <template>
   <MainLayout>
 
-    <h1 class="text-3xl font-bold mb-8">Projects</h1>
+    <div class="flex justify-between items-center mb-8">
+      <h1 class="text-3xl font-bold">Projects</h1>
+
+      <button
+        v-if="canCreateProject"
+        @click="showModal = true"
+        class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+      >
+        + Nuovo Progetto
+      </button>
+    </div>
 
     <div v-if="loading">Caricamento...</div>
 
-    <div
-      v-for="project in projects"
-      :key="project.id"
-      class="bg-white p-6 rounded-xl shadow mb-4"
-    >
-      <div class="flex justify-between items-center">
+    <!-- ================= OWNED PROJECTS ================= -->
+    <div v-if="ownedProjects.length">
+      <h2 class="text-xl font-semibold mb-4 text-gray-700">
+        📁 My Projects
+      </h2>
 
-        <div>
-          <h2 class="text-lg font-semibold">
-            {{ project.name }}
-          </h2>
-          <p class="text-gray-500 text-sm">
-            {{ project.description }}
+      <div
+        v-for="project in ownedProjects"
+        :key="project.id"
+        class="bg-white p-6 rounded-xl shadow mb-4 border-l-4 border-green-500"
+      >
+        <h2 class="text-lg font-semibold">{{ project.name }}</h2>
+        <p class="text-gray-500 text-sm">{{ project.description }}</p>
+
+        <div class="mt-3 text-sm text-gray-600 space-y-1">
+          <p>
+            👤 Creato da:
+            <strong>{{ project.creator?.name }}</strong>
+          </p>
+
+          <p>
+            📅 Creato il:
+            {{ new Date(project.created_at).toLocaleDateString() }}
+          </p>
+
+          <p v-if="project.deadline">
+            ⏳ Deadline:
+            {{ new Date(project.deadline).toLocaleDateString() }}
           </p>
         </div>
+      </div>
+    </div>
 
-        <div class="flex gap-2">
+    <!-- ================= SHARED PROJECTS ================= -->
+    <div v-if="sharedProjects.length" class="mt-10">
+      <h2 class="text-xl font-semibold mb-4 text-gray-700">
+        🤝 Shared With Me
+      </h2>
 
-          <!-- 👥 MEMBERS -->
-          <router-link
-            :to="`/projects/${project.id}/members`"
-            class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+      <div
+        v-for="project in sharedProjects"
+        :key="project.id"
+        class="bg-white p-6 rounded-xl shadow mb-4 border-l-4 border-blue-500"
+      >
+        <h2 class="text-lg font-semibold">{{ project.name }}</h2>
+        <p class="text-gray-500 text-sm">{{ project.description }}</p>
+
+        <div class="mt-3 text-sm text-gray-600 space-y-1">
+          <p>
+            👤 Creato da:
+            <strong>{{ project.creator?.name }}</strong>
+          </p>
+
+          <p>
+            📅 Creato il:
+            {{ new Date(project.created_at).toLocaleDateString() }}
+          </p>
+
+          <p v-if="project.deadline">
+            ⏳ Deadline:
+            {{ new Date(project.deadline).toLocaleDateString() }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= MODAL ================= -->
+    <div
+      v-if="showModal"
+      class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50"
+    >
+      <div class="bg-white w-96 p-6 rounded-2xl shadow-xl">
+
+        <h2 class="text-xl font-semibold mb-4">
+          Crea Nuovo Progetto
+        </h2>
+
+        <div class="space-y-4">
+
+          <div>
+            <label class="block text-sm mb-1 text-gray-600">
+              Nome progetto
+            </label>
+            <input
+              v-model="newProject.name"
+              class="w-full border rounded px-3 py-2"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm mb-1 text-gray-600">
+              Descrizione
+            </label>
+            <textarea
+              v-model="newProject.description"
+              class="w-full border rounded px-3 py-2"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm mb-1 text-gray-600">
+              Deadline
+            </label>
+            <input
+              type="date"
+              v-model="newProject.deadline"
+              class="w-full border rounded px-3 py-2"
+            />
+          </div>
+
+          <div
+            v-if="error"
+            class="bg-red-50 text-red-600 text-sm p-2 rounded"
           >
-            Membri
-          </router-link>
+            {{ error }}
+          </div>
+
+        </div>
+
+        <div class="flex justify-end gap-3 mt-6">
+
+          <button
+            @click="showModal = false"
+            class="px-4 py-2 rounded border"
+          >
+            Annulla
+          </button>
+
+          <button
+            @click="createProject"
+            :disabled="creating"
+            class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
+          >
+            <span v-if="!creating">Crea</span>
+            <span v-else>Creazione...</span>
+          </button>
 
         </div>
 

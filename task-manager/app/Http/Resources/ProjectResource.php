@@ -10,13 +10,32 @@ class ProjectResource extends JsonResource
     public function toArray(Request $request): array
 {
     return [
-        'id' => $this->id,
-        'name' => $this->name,
-        'description' => $this->description,
-        /*'tasks_count' => $this->tasks_count ?? 0,*/
-        'tasks_count' => $this->whenCounted('tasks'),
-        'created_at' => $this->created_at->format('Y-m-d H:i'),
-        'updated_at' => $this->updated_at->format('Y-m-d H:i'),
-    ];
+    'id' => $this->id,
+    'name' => $this->name,
+    'description' => $this->description,
+    'deadline' => $this->deadline,
+    'created_at' => $this->created_at,
+
+   
+
+
+    'creator' => $this->creator ? [
+    'id' => $this->creator->id,
+    'name' => $this->creator->name,
+] : null,
+
+
+
+
+    'role' => $this->whenPivotLoaded('project_user', function () {
+        return $this->pivot->role;
+    }),
+];
+
+
+
+
+
+
 }
 }
