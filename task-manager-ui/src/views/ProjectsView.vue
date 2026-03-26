@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from "vue"
 import api from "../services/api"
 import MainLayout from "../layouts/MainLayout.vue"
+import { RouterLink } from "vue-router"
 
 const projects = ref([])
 const loading = ref(true)
@@ -19,16 +20,10 @@ const newProject = ref({
 const currentUser = JSON.parse(localStorage.getItem("user"))
 const canCreateProject = currentUser?.status === "approved"
 
-/*
-|--------------------------------------------------------------------------
-| Fetch Projects
-|--------------------------------------------------------------------------
-*/
+/* ---------------- FETCH PROJECTS ---------------- */
 const fetchProjects = async () => {
   try {
-
     const res = await api.get("/projects")
-    
     projects.value = res.data.data
   } catch (err) {
     console.error(err)
@@ -39,11 +34,7 @@ const fetchProjects = async () => {
 
 onMounted(fetchProjects)
 
-/*
-|--------------------------------------------------------------------------
-| Split Projects
-|--------------------------------------------------------------------------
-*/
+/* ---------------- SPLIT PROJECTS ---------------- */
 const ownedProjects = computed(() =>
   projects.value.filter(p => p.role === "owner")
 )
@@ -52,11 +43,7 @@ const sharedProjects = computed(() =>
   projects.value.filter(p => p.role !== "owner")
 )
 
-/*
-|--------------------------------------------------------------------------
-| Create Project
-|--------------------------------------------------------------------------
-*/
+/* ---------------- CREATE PROJECT ---------------- */
 const createProject = async () => {
   if (!newProject.value.name) {
     error.value = "Il nome progetto è obbligatorio"
@@ -73,7 +60,6 @@ const createProject = async () => {
     newProject.value = { name: "", description: "", deadline: "" }
 
     fetchProjects()
-
   } catch (err) {
     error.value = "Errore durante creazione progetto"
   } finally {
@@ -105,10 +91,11 @@ const createProject = async () => {
         📁 My Projects
       </h2>
 
-      <div
+      <RouterLink
         v-for="project in ownedProjects"
         :key="project.id"
-        class="bg-white p-6 rounded-xl shadow mb-4 border-l-4 border-green-500"
+        :to="`/projects/${project.id}`"
+        class="block bg-white p-6 rounded-xl shadow mb-4 border-l-4 border-green-500 hover:shadow-lg transition cursor-pointer"
       >
         <h2 class="text-lg font-semibold">{{ project.name }}</h2>
         <p class="text-gray-500 text-sm">{{ project.description }}</p>
@@ -129,7 +116,7 @@ const createProject = async () => {
             {{ new Date(project.deadline).toLocaleDateString() }}
           </p>
         </div>
-      </div>
+      </RouterLink>
     </div>
 
     <!-- ================= SHARED PROJECTS ================= -->
@@ -138,10 +125,11 @@ const createProject = async () => {
         🤝 Shared With Me
       </h2>
 
-      <div
+      <RouterLink
         v-for="project in sharedProjects"
         :key="project.id"
-        class="bg-white p-6 rounded-xl shadow mb-4 border-l-4 border-blue-500"
+        :to="`/projects/${project.id}`"
+        class="block bg-white p-6 rounded-xl shadow mb-4 border-l-4 border-blue-500 hover:shadow-lg transition cursor-pointer"
       >
         <h2 class="text-lg font-semibold">{{ project.name }}</h2>
         <p class="text-gray-500 text-sm">{{ project.description }}</p>
@@ -162,7 +150,7 @@ const createProject = async () => {
             {{ new Date(project.deadline).toLocaleDateString() }}
           </p>
         </div>
-      </div>
+      </RouterLink>
     </div>
 
     <!-- ================= MODAL ================= -->
@@ -178,41 +166,25 @@ const createProject = async () => {
 
         <div class="space-y-4">
 
-          <div>
-            <label class="block text-sm mb-1 text-gray-600">
-              Nome progetto
-            </label>
-            <input
-              v-model="newProject.name"
-              class="w-full border rounded px-3 py-2"
-            />
-          </div>
+          <input
+            v-model="newProject.name"
+            placeholder="Nome progetto"
+            class="w-full border rounded px-3 py-2"
+          />
 
-          <div>
-            <label class="block text-sm mb-1 text-gray-600">
-              Descrizione
-            </label>
-            <textarea
-              v-model="newProject.description"
-              class="w-full border rounded px-3 py-2"
-            />
-          </div>
+          <textarea
+            v-model="newProject.description"
+            placeholder="Descrizione"
+            class="w-full border rounded px-3 py-2"
+          />
 
-          <div>
-            <label class="block text-sm mb-1 text-gray-600">
-              Deadline
-            </label>
-            <input
-              type="date"
-              v-model="newProject.deadline"
-              class="w-full border rounded px-3 py-2"
-            />
-          </div>
+          <input
+            type="date"
+            v-model="newProject.deadline"
+            class="w-full border rounded px-3 py-2"
+          />
 
-          <div
-            v-if="error"
-            class="bg-red-50 text-red-600 text-sm p-2 rounded"
-          >
+          <div v-if="error" class="bg-red-50 text-red-600 text-sm p-2 rounded">
             {{ error }}
           </div>
 
