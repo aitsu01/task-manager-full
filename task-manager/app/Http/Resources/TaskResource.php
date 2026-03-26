@@ -18,12 +18,19 @@ class TaskResource extends JsonResource
             'due_date' => $this->due_date,
             'completed_at' => $this->completed_at,
 
-            'project' => $this->whenLoaded('project', function () {
+            /*'project' => $this->whenLoaded('project', function () {
                 return $this->project ? [
                     'id' => $this->project->id,
                     'name' => $this->project->name,
                 ] : null;
-            }),
+            }),*/
+
+            'project' => $this->whenLoaded('project', function () {
+    return [
+        'id' => $this->project->id,
+        'name' => $this->project->name,
+    ];
+}),
 
             'assigned_user' => $this->whenLoaded('assignedUser', function () {
                 return $this->assignedUser ? [

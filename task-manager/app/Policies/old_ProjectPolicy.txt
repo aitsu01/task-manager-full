@@ -4,14 +4,22 @@ namespace App\Policies;
 
 use App\Models\User;
 use App\Models\Project;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
 
 class ProjectPolicy
 {
+    /**
+     * Tutti gli utenti autenticati possono creare progetti
+     */
     public function create(User $user)
     {
-        return $user->status === 'approved';
+        return true;
     }
 
+    /**
+     * Può vedere il progetto se è membro
+     */
     public function view(User $user, Project $project)
     {
         // Admin globale vede tutto
@@ -24,18 +32,22 @@ class ProjectPolicy
             ->exists();
     }
 
-    public function update(User $user, Project $project)
-    {
-        if ($user->role && $user->role->name === 'admin') {
-            return true;
-        }
-
-        return $project->users()
-            ->where('user_id', $user->id)
-            ->wherePivot('role', 'owner')
-            ->exists();
+    /**
+     * Può modificare se è owner o manager
+     */
+  public function update(User $user, Project $project)
+{
+    // Admin globale può sempre
+    if ($user->role && $user->role->name === 'admin') {
+        return true;
     }
 
+    // Solo owner del progetto
+    return $project->users()
+        ->where('user_id', $user->id)
+        ->wherePivot('role', 'owner')
+        ->exists();
+}
     public function delete(User $user, Project $project)
     {
         if ($user->role && $user->role->name === 'admin') {
@@ -44,10 +56,13 @@ class ProjectPolicy
 
         return $project->users()
             ->where('user_id', $user->id)
-            ->wherePivot('role', 'owner')
+            ->where('role', 'owner')
             ->exists();
     }
 
+    /**
+     * Solo owner può gestire membri
+     */
     public function manageMembers(User $user, Project $project)
     {
         if ($user->role && $user->role->name === 'admin') {
@@ -56,7 +71,7 @@ class ProjectPolicy
 
         return $project->users()
             ->where('user_id', $user->id)
-            ->wherePivot('role', 'owner')
+            ->where('role', 'owner')
             ->exists();
     }
 }

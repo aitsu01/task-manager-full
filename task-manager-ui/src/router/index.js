@@ -3,6 +3,7 @@ import Dashboard from "../views/Dashboard.vue"
 import LoginView from "../views/LoginView.vue"
 import RegisterView from "../views/RegisterView.vue"
 import AdminUsersView from "../views/AdminUsersView.vue"
+import ProjectDetailView from "../views/ProjectDetailView.vue"
 
 
 
@@ -34,6 +35,11 @@ const routes = [
 },
 
 {
+  path: '/projects/:id',
+  component: ProjectDetailView
+},
+
+{
   path: "/projects/:id/members",
   name: "ProjectMembers",
   component: () => import("../views/ProjectMembersView.vue")
@@ -44,6 +50,8 @@ const routes = [
   name: "Projects",
   component: () => import("../views/ProjectsView.vue")
 },
+
+
 
 
 ]

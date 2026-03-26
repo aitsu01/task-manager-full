@@ -22,36 +22,52 @@ class ProjectTaskController extends Controller
         $this->taskService = $taskService;
     }
 
-   public function index(Project $project)
-{
-    $this->authorize('view', $project);
+    /**
+     * Lista task del progetto
+     */
+    public function index(Project $project)
+    {
+        $this->authorize('view', $project);
 
-    $tasks = $this->taskService
-        ->getPaginatedTasks($project);
+        $tasks = $this->taskService
+            ->getPaginatedTasks($project);
 
-    $tasks->load('assignedUser');
+        $tasks->load('assignedUser');
 
-    return TaskResource::collection($tasks);
-}
+    
 
+$tasks->load(['assignedUser', 'project']);
+
+        return TaskResource::collection($tasks);
+    }
+
+    /**
+     * Creazione task (TUTTI i membri possono farlo)
+     */
     public function store(Request $request, Project $project)
     {
-        $this->authorize('update', $project);
+        // Basta essere membro
+        $this->authorize('view', $project);
 
         $validated = $request->validate([
-    'title' => 'sometimes|string|max:255',
-    'description' => 'nullable|string',
-    'status' => ['sometimes', Rule::in(['todo', 'doing', 'done'])],
-    'due_date' => 'nullable|date',
-    'assigned_user_id' => 'nullable|exists:users,id'
-]);
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'status' => ['required', Rule::in(['todo', 'doing', 'done'])],
+            'due_date' => 'nullable|date',
+            'assigned_user_id' => 'nullable|exists:users,id'
+        ]);
 
         $task = $this->taskService
             ->createTask($project, $validated);
 
+        $task->load(['project', 'assignedUser']);
+
         return new TaskResource($task);
     }
 
+    /**
+     * Mostra singola task
+     */
     public function show(Project $project, Task $task)
     {
         $this->authorize('view', $project);
@@ -60,36 +76,81 @@ class ProjectTaskController extends Controller
             abort(404);
         }
 
+        $task->load('assignedUser');
+
         return new TaskResource($task);
     }
 
+    /**
+     * Aggiorna task
+     * - Owner/Admin → tutto
+     * - Member → solo se assegnata a lui
+     */
     public function update(Request $request, Project $project, Task $task)
     {
-        $this->authorize('update', $project);
+        $this->authorize('view', $project);
 
         if (!$this->taskService->belongsToProject($task, $project)) {
             abort(404);
+        }
+
+        $user = auth()->user();
+
+        $isOwner = $project->users()
+            ->where('user_id', $user->id)
+            ->wherePivot('role', 'owner')
+            ->exists();
+
+        $isAdmin = $user->role && $user->role->name === 'admin';
+
+        // Se NON owner e NON admin
+        if (!$isOwner && !$isAdmin) {
+
+            // Può modificare solo se task assegnata a lui
+            if ($task->assigned_user_id !== $user->id) {
+                abort(403, 'Non puoi modificare questa task');
+            }
         }
 
         $validated = $request->validate([
             'title' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
             'status' => ['sometimes', Rule::in(['todo', 'doing', 'done'])],
-            'due_date' => 'nullable|date'
+            'due_date' => 'nullable|date',
+            'assigned_user_id' => 'nullable|exists:users,id'
         ]);
 
         $task = $this->taskService
             ->updateTask($task, $validated);
 
+        $task->load(['project', 'assignedUser']);
+
         return new TaskResource($task);
     }
 
+    /**
+     * Eliminazione task
+     * Solo Owner o Admin
+     */
     public function destroy(Project $project, Task $task)
     {
-        $this->authorize('delete', $project);
+        $this->authorize('view', $project);
 
         if (!$this->taskService->belongsToProject($task, $project)) {
             abort(404);
+        }
+
+        $user = auth()->user();
+
+        $isOwner = $project->users()
+            ->where('user_id', $user->id)
+            ->wherePivot('role', 'owner')
+            ->exists();
+
+        $isAdmin = $user->role && $user->role->name === 'admin';
+
+        if (!$isOwner && !$isAdmin) {
+            abort(403, 'Solo owner o admin possono eliminare task');
         }
 
         $this->taskService->deleteTask($task);
