@@ -48,16 +48,18 @@ class ProjectPolicy
             ->exists();
     }
 
-    /*public function manageMembers(User $user, Project $project)
-    {
-        if ($user->role && $user->role->name === 'admin') {
-            return true;
-        }
+    public function manageMembers(User $user, Project $project)
+{
+    //  Admin globale 
+    if ($user->role_id === 1) {
+        return true;
+    }
 
-        return $project->users()
-            ->where('user_id', $user->id)
-            ->wherePivot('role', 'owner')
-            ->exists();
-    }*/
+    //  Owner del progetto
+    return $project->users()
+        ->where('user_id', $user->id)
+        ->wherePivot('role', 'owner')
+        ->exists();
+}
             
 }

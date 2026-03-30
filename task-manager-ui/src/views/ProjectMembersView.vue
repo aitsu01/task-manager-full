@@ -14,11 +14,7 @@ const newRole = ref("member")
 
 const currentUser = JSON.parse(localStorage.getItem("user"))
 
-/*
-|--------------------------------------------------------------------------
-| Fetch Members
-|--------------------------------------------------------------------------
-*/
+/* ---------------- FETCH MEMBERS ---------------- */
 const fetchMembers = async () => {
   try {
     const res = await api.get(`/projects/${projectId}/members`)
@@ -30,18 +26,11 @@ const fetchMembers = async () => {
   }
 }
 
-/*
-|--------------------------------------------------------------------------
-| Permissions
-|--------------------------------------------------------------------------
-*/
+/* ---------------- PERMISSIONS ---------------- */
 const canManageMembers = computed(() => {
   // Admin globale (role_id = 1)
-  if (currentUser?.role_id === 1) {
-    return true
-  }
+  if (currentUser?.role_id === 1) return true
 
-  // Owner nel progetto
   const me = members.value.find(
     member => member.id === currentUser.id
   )
@@ -49,11 +38,7 @@ const canManageMembers = computed(() => {
   return me?.role === "owner"
 })
 
-/*
-|--------------------------------------------------------------------------
-| Add Member
-|--------------------------------------------------------------------------
-*/
+/* ---------------- ADD MEMBER ---------------- */
 const addMember = async () => {
   if (!newMemberId.value) return
 
@@ -78,11 +63,7 @@ const addMember = async () => {
   }
 }
 
-/*
-|--------------------------------------------------------------------------
-| Update Role
-|--------------------------------------------------------------------------
-*/
+/* ---------------- UPDATE ROLE ---------------- */
 const updateRole = async (member) => {
   try {
     await api.patch(`/projects/${projectId}/members/${member.id}`, {
@@ -95,11 +76,7 @@ const updateRole = async (member) => {
   }
 }
 
-/*
-|--------------------------------------------------------------------------
-| Remove Member
-|--------------------------------------------------------------------------
-*/
+/* ---------------- REMOVE MEMBER ---------------- */
 const removeMember = async (member) => {
   if (!confirm("Rimuovere questo membro?")) return
 
@@ -117,53 +94,64 @@ onMounted(fetchMembers)
 <template>
   <MainLayout>
 
-    <div class="flex justify-between items-center mb-8">
-      <h1 class="text-3xl font-bold">Project Members</h1>
+    <!-- HEADER -->
+    <div class="flex justify-between items-center mb-10">
+      <h1 class="text-3xl font-bold text-gray-800">
+        Project Members
+      </h1>
     </div>
 
-    <!-- Avviso -->
-    <p
-      v-if="!canManageMembers"
-      class="text-gray-500 text-sm mb-4"
-    >
-      Solo l'owner del progetto può gestire i membri.
-    </p>
+    <div v-if="loading" class="text-gray-500">
+      Caricamento...
+    </div>
 
-    <div v-if="loading">Caricamento...</div>
-
-    <!-- LISTA MEMBRI -->
+    <!-- MEMBERS LIST -->
     <div
       v-for="member in members"
       :key="member.id"
-      class="bg-white p-6 rounded-xl shadow mb-4"
+      class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-4 hover:shadow-md transition"
     >
       <div class="flex justify-between items-center">
 
-        <!-- INFO -->
-        <div>
-          <p class="font-semibold">{{ member.name }}</p>
-          <p class="text-gray-500 text-sm">{{ member.email }}</p>
-
-          <span
-            class="inline-block mt-2 px-2 py-1 text-xs rounded font-medium"
-            :class="{
-              'bg-purple-100 text-purple-700': member.role === 'owner',
-              'bg-blue-100 text-blue-700': member.role === 'manager',
-              'bg-gray-100 text-gray-700': member.role === 'member'
-            }"
+        <!-- MEMBER INFO -->
+        <div class="flex items-center gap-4">
+          <!-- Avatar -->
+          <div
+            class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-lg"
           >
-            {{ member.role }}
-          </span>
+            {{ member.name.charAt(0).toUpperCase() }}
+          </div>
+
+          <div>
+            <p class="font-semibold text-gray-800">
+              {{ member.name }}
+            </p>
+            <p class="text-gray-500 text-sm">
+              {{ member.email }}
+            </p>
+
+            <!-- Role Badge -->
+            <span
+              class="inline-block mt-2 px-3 py-1 text-xs rounded-full font-medium"
+              :class="{
+                'bg-purple-100 text-purple-700': member.role === 'owner',
+                'bg-blue-100 text-blue-700': member.role === 'manager',
+                'bg-gray-100 text-gray-700': member.role === 'member'
+              }"
+            >
+              {{ member.role }}
+            </span>
+          </div>
         </div>
 
         <!-- ACTIONS -->
         <div
           v-if="member.role !== 'owner' && canManageMembers"
-          class="flex gap-2 items-center"
+          class="flex gap-3 items-center"
         >
           <select
             v-model="member.role"
-            class="border rounded px-2 py-1"
+            class="border border-gray-200 rounded-lg px-3 py-1 focus:ring-2 focus:ring-indigo-500 outline-none"
           >
             <option value="manager">Manager</option>
             <option value="member">Member</option>
@@ -171,39 +159,41 @@ onMounted(fetchMembers)
 
           <button
             @click="updateRole(member)"
-            class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+            class="bg-indigo-600 text-white px-4 py-1 rounded-lg text-sm hover:bg-indigo-700 transition"
           >
-            Aggiorna
+            Save
           </button>
 
           <button
             @click="removeMember(member)"
-            class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+            class="bg-red-500 text-white px-4 py-1 rounded-lg text-sm hover:bg-red-600 transition"
           >
-            Rimuovi
+            Remove
           </button>
         </div>
 
       </div>
     </div>
 
-    <!-- AGGIUNGI MEMBRO -->
+    <!-- ADD MEMBER SECTION -->
     <div
       v-if="canManageMembers"
-      class="bg-white p-6 rounded-xl shadow mt-6"
+      class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 mt-10"
     >
-      <h2 class="text-lg font-semibold mb-4">Aggiungi membro</h2>
+      <h2 class="text-xl font-semibold mb-6 text-gray-800">
+        Add New Member
+      </h2>
 
-      <div class="flex gap-3">
+      <div class="flex gap-4 items-center">
         <input
           v-model="newMemberId"
           placeholder="User ID"
-          class="border rounded px-3 py-2 w-32"
+          class="border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 outline-none w-40"
         />
 
         <select
           v-model="newRole"
-          class="border rounded px-3 py-2"
+          class="border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
         >
           <option value="manager">Manager</option>
           <option value="member">Member</option>
@@ -211,9 +201,9 @@ onMounted(fetchMembers)
 
         <button
           @click="addMember"
-          class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition shadow-sm"
         >
-          Aggiungi
+          Add Member
         </button>
       </div>
     </div>

@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\AdminUserController;
 use App\Http\Controllers\Api\ProjectMemberController;
 use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\MyTaskController;
+use App\Http\Controllers\Api\UserController;
 
 
 /*
@@ -21,12 +22,6 @@ use App\Http\Controllers\Api\MyTaskController;
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 
-/*
-|--------------------------------------------------------------------------
-| PROTECTED ROUTES
-|--------------------------------------------------------------------------
-*/
-
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -35,56 +30,66 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
+    /*
+    |--------------------------------------------------------------------------
+    | PROJECTS
+    |--------------------------------------------------------------------------
+    */
+
     Route::apiResource('projects', ProjectController::class);
+
+    /*
+    |--------------------------------------------------------------------------
+    | PROJECT TASKS (Nested)
+    |--------------------------------------------------------------------------
+    */
 
     Route::apiResource('projects.tasks', ProjectTaskController::class);
 
+    /*
+    |--------------------------------------------------------------------------
+    | MEMBERS (Nested clean version)
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/projects/{project}/members', [ProjectMemberController::class, 'index']);
+    Route::post('/projects/{project}/members', [ProjectMemberController::class, 'store']);
+    Route::patch('/projects/{project}/members/{user}', [ProjectMemberController::class, 'update']);
+    Route::delete('/projects/{project}/members/{user}', [ProjectMemberController::class, 'destroy']);
+
+    /*
+    |--------------------------------------------------------------------------
+    | DASHBOARD & TASKS
+    |--------------------------------------------------------------------------
+    */
+
     Route::get('/dashboard', [DashboardController::class, 'index']);
-
     Route::get('/my-tasks', [MyTaskController::class, 'index']);
-
     Route::apiResource('tasks', TaskController::class);
-    
 
-    // ADMIN ROUTES
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN USERS
+    |--------------------------------------------------------------------------
+    */
+
     Route::get('/admin/users', [AdminUserController::class, 'index']);
     Route::patch('/admin/users/{user}/approve', [AdminUserController::class, 'approve']);
     Route::patch('/admin/users/{user}/reject', [AdminUserController::class, 'reject']);
     Route::patch('/admin/users/{user}/role', [AdminUserController::class, 'updateRole']);
     Route::delete('/admin/users/{user}', [AdminUserController::class, 'destroy']);
 
+    /*
+    |--------------------------------------------------------------------------
+    | USER PROFILE
+    |--------------------------------------------------------------------------
+    */
 
-   
-
-Route::prefix('projects/{project}')->group(function () {
-
-    Route::get('/members', [ProjectMemberController::class, 'index']);
-    Route::post('/members', [ProjectMemberController::class, 'store']);
-    Route::patch('/members/{user}', [ProjectMemberController::class, 'update']);
-    Route::delete('/members/{user}', [ProjectMemberController::class, 'destroy']);
-
-
-Route::middleware('auth:sanctum')->group(function () {
-
-    Route::get('/projects/{project}/members', [ProjectMemberController::class, 'index']);
-
-    Route::post('/projects/{project}/members', [ProjectMemberController::class, 'store']);
-
-    Route::patch('/projects/{project}/members/{user}', [ProjectMemberController::class, 'update']);
-
-    Route::delete('/projects/{project}/members/{user}', [ProjectMemberController::class, 'destroy']);
+    Route::post('/user/avatar', [UserController::class, 'updateAvatar']);
 
 });
 
 
 
-
-});
-
-
-
-
-
-});
 
 

@@ -52,6 +52,13 @@ const logout = () => {
          Projects
         </router-link>
 
+        <router-link
+  to="/profile"
+  class="text-gray-700 hover:text-indigo-600"
+>
+  Profile
+</router-link>
+
       </nav>
 
       <!-- Logout -->
