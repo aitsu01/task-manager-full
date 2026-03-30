@@ -54,7 +54,7 @@ const logout = () => {
 
         <router-link
   to="/profile"
-  class="text-gray-700 hover:text-indigo-600"
+  class="block px-4 py-2 text-gray-700 hover:text-indigo-600"
 >
   Profile
 </router-link>
