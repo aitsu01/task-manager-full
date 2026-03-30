@@ -32,10 +32,16 @@ const fetchMembers = async () => {
 
 /*
 |--------------------------------------------------------------------------
-| Computed: isOwner
+| Permissions
 |--------------------------------------------------------------------------
 */
-const isOwner = computed(() => {
+const canManageMembers = computed(() => {
+  // Admin globale (role_id = 1)
+  if (currentUser?.role_id === 1) {
+    return true
+  }
+
+  // Owner nel progetto
   const me = members.value.find(
     member => member.id === currentUser.id
   )
@@ -64,6 +70,8 @@ const addMember = async () => {
   } catch (err) {
     if (err.response?.status === 400) {
       alert("Utente già membro del progetto")
+    } else if (err.response?.status === 403) {
+      alert("Non autorizzato")
     } else {
       alert("Errore durante aggiunta membro")
     }
@@ -113,8 +121,9 @@ onMounted(fetchMembers)
       <h1 class="text-3xl font-bold">Project Members</h1>
     </div>
 
+    <!-- Avviso -->
     <p
-      v-if="!isOwner"
+      v-if="!canManageMembers"
       class="text-gray-500 text-sm mb-4"
     >
       Solo l'owner del progetto può gestire i membri.
@@ -147,9 +156,9 @@ onMounted(fetchMembers)
           </span>
         </div>
 
-        <!-- ACTIONS (SOLO OWNER) -->
+        <!-- ACTIONS -->
         <div
-          v-if="member.role !== 'owner' && isOwner"
+          v-if="member.role !== 'owner' && canManageMembers"
           class="flex gap-2 items-center"
         >
           <select
@@ -178,9 +187,9 @@ onMounted(fetchMembers)
       </div>
     </div>
 
-    <!-- AGGIUNGI MEMBRO (SOLO OWNER) -->
+    <!-- AGGIUNGI MEMBRO -->
     <div
-      v-if="isOwner"
+      v-if="canManageMembers"
       class="bg-white p-6 rounded-xl shadow mt-6"
     >
       <h2 class="text-lg font-semibold mb-4">Aggiungi membro</h2>

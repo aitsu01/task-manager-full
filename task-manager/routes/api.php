@@ -64,6 +64,19 @@ Route::prefix('projects/{project}')->group(function () {
     Route::delete('/members/{user}', [ProjectMemberController::class, 'destroy']);
 
 
+Route::middleware('auth:sanctum')->group(function () {
+
+    Route::get('/projects/{project}/members', [ProjectMemberController::class, 'index']);
+
+    Route::post('/projects/{project}/members', [ProjectMemberController::class, 'store']);
+
+    Route::patch('/projects/{project}/members/{user}', [ProjectMemberController::class, 'update']);
+
+    Route::delete('/projects/{project}/members/{user}', [ProjectMemberController::class, 'destroy']);
+
+});
+
+
 
 
 });

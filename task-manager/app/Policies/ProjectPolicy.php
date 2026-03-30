@@ -48,7 +48,7 @@ class ProjectPolicy
             ->exists();
     }
 
-    public function manageMembers(User $user, Project $project)
+    /*public function manageMembers(User $user, Project $project)
     {
         if ($user->role && $user->role->name === 'admin') {
             return true;
@@ -58,5 +58,6 @@ class ProjectPolicy
             ->where('user_id', $user->id)
             ->wherePivot('role', 'owner')
             ->exists();
-    }
+    }*/
+            
 }
