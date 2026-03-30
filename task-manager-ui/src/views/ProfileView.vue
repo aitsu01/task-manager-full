@@ -120,32 +120,50 @@ onBeforeUnmount(() => {
       <!-- Avatar Section -->
       <div class="flex flex-col items-center gap-4">
 
+
+
+
         <!-- Preview con Cropper -->
         <div v-if="preview" class="w-64">
           <img ref="image" :src="preview" class="max-w-full rounded-lg" />
         </div>
 
-        <!-- Avatar attuale -->
-        <img
-          v-else-if="currentUser.avatar"
-          :src="`http://127.0.0.1:8000/storage/${currentUser.avatar}`"
-          class="w-28 h-28 rounded-full object-cover border-4 border-indigo-100"
-        />
+         <div v-else class="relative group w-28 h-28">
 
-        <!-- Placeholder -->
-        <div
-          v-else
-          class="w-28 h-28 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-3xl font-bold"
-        >
-          {{ currentUser.name.charAt(0).toUpperCase() }}
-        </div>
+  <!-- Avatar -->
+  <img
+    v-if="currentUser.avatar"
+    :src="`http://127.0.0.1:8000/storage/${currentUser.avatar}`"
+    class="w-28 h-28 rounded-full object-cover border-4 border-indigo-100 transition"
+  />
 
-        <!-- Upload Buttons -->
-        <div class="flex gap-3">
-          <label class="cursor-pointer bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">
-            Select Image
-            <input type="file" class="hidden" accept="image/jpeg,image/png,image/webp" @change="handleFileChange" />
-          </label>
+  <!-- Placeholder -->
+  <div
+    v-else
+    class="w-28 h-28 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-3xl font-bold"
+  >
+    {{ currentUser.name.charAt(0).toUpperCase() }}
+  </div>
+
+  <!-- Overlay -->
+  <label
+    class="absolute inset-0 bg-black bg-opacity-40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition cursor-pointer"
+  >
+    <span class="text-white text-sm">Edit</span>
+    <input
+      type="file"
+      class="hidden"
+      accept="image/jpeg,image/png,image/webp"
+      @change="handleFileChange"
+    />
+  </label>
+
+</div>
+
+
+
+
+       
 
           <button
             v-if="preview"
@@ -171,7 +189,7 @@ onBeforeUnmount(() => {
           <p class="font-semibold">{{ currentUser.email }}</p>
         </div>
       </div>
-     </div>
+     
 
      <div class="mt-10 space-y-4">
 
