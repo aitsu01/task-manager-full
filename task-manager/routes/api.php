@@ -2,6 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Hash;
+
+
+
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\ProjectTaskController;
@@ -12,7 +17,6 @@ use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\MyTaskController;
 use App\Http\Controllers\Api\UserController;
 
-
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
@@ -21,6 +25,45 @@ use App\Http\Controllers\Api\UserController;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
+
+Route::post('/forgot-password', function (Request $request) {
+    $request->validate(['email' => 'required|email']);
+
+    $status = Password::sendResetLink(
+        $request->only('email')
+    );
+
+    return $status === Password::RESET_LINK_SENT
+        ? response()->json(['message' => __($status)])
+        : response()->json(['message' => __($status)], 400);
+});
+
+Route::post('/reset-password', function (Request $request) {
+    $request->validate([
+        'token' => 'required',
+        'email' => 'required|email',
+        'password' => 'required|min:8|confirmed',
+    ]);
+
+    $status = Password::reset(
+        $request->only('email', 'password', 'password_confirmation', 'token'),
+        function ($user, $password) {
+            $user->forceFill([
+                'password' => Hash::make($password)
+            ])->save();
+        }
+    );
+
+    return $status === Password::PASSWORD_RESET
+        ? response()->json(['message' => __($status)])
+        : response()->json(['message' => __($status)], 400);
+});
+
+/*
+|--------------------------------------------------------------------------
+| PROTECTED ROUTES
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware('auth:sanctum')->group(function () {
 
@@ -37,18 +80,11 @@ Route::middleware('auth:sanctum')->group(function () {
     */
 
     Route::apiResource('projects', ProjectController::class);
-
-    /*
-    |--------------------------------------------------------------------------
-    | PROJECT TASKS (Nested)
-    |--------------------------------------------------------------------------
-    */
-
     Route::apiResource('projects.tasks', ProjectTaskController::class);
 
     /*
     |--------------------------------------------------------------------------
-    | MEMBERS (Nested clean version)
+    | MEMBERS
     |--------------------------------------------------------------------------
     */
 
@@ -87,9 +123,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/user/avatar', [UserController::class, 'updateAvatar']);
     Route::put('/user/profile', [UserController::class, 'updateProfile']);
-
+    Route::put('/user/password', [UserController::class, 'updatePassword']);
 });
-
 
 
 

@@ -5,6 +5,9 @@ import RegisterView from "../views/RegisterView.vue"
 import AdminUsersView from "../views/AdminUsersView.vue"
 import ProjectDetailView from "../views/ProjectDetailView.vue"
 import ProfileView from "../views/ProfileView.vue"
+import ForgotPasswordView from "../views/ForgotPasswordView.vue"
+import ResetPasswordView from "../views/ResetPasswordView.vue"
+
 
 
 
@@ -61,6 +64,19 @@ const routes = [
   name: "profile",
   component: ProfileView
 },
+
+
+{
+  path: "/forgot-password",
+  component: ForgotPasswordView
+},
+
+{
+  path: "/reset-password",
+  name: "reset-password",
+  component: ResetPasswordView
+},
+
 
 
 

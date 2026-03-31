@@ -21,11 +21,10 @@ const login = async () => {
       password: password.value
     })
 
-    // SALVIAMO TUTTO QUI
+    // Salviamo token e utente
     localStorage.setItem("token", response.data.token)
     localStorage.setItem("user", JSON.stringify(response.data.user))
 
-    
     router.push("/dashboard")
 
   } catch (err) {
@@ -34,8 +33,6 @@ const login = async () => {
     loading.value = false
   }
 }
-
-
 </script>
 
 <template>
@@ -43,6 +40,7 @@ const login = async () => {
 
     <div class="bg-white p-10 rounded-2xl shadow-xl w-96">
 
+      <!-- Title -->
       <h2 class="text-2xl font-semibold text-center mb-2">
         Task Manager
       </h2>
@@ -60,6 +58,7 @@ const login = async () => {
             v-model="email"
             type="email"
             required
+            autocomplete="email"
             class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -73,7 +72,8 @@ const login = async () => {
               v-model="password"
               :type="showPassword ? 'text' : 'password'"
               required
-              class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+              autocomplete="current-password"
+              class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-16"
             />
 
             <!-- Toggle -->
@@ -87,6 +87,16 @@ const login = async () => {
           </div>
         </div>
 
+        <!-- Forgot Password -->
+        <div class="text-right">
+          <router-link
+            to="/forgot-password"
+            class="text-sm text-blue-600 hover:underline"
+          >
+            Password dimenticata?
+          </router-link>
+        </div>
+
         <!-- Error -->
         <div v-if="error"
              class="bg-red-50 text-red-600 text-sm p-2 rounded">
@@ -97,19 +107,21 @@ const login = async () => {
         <button
           type="submit"
           :disabled="loading"
-          class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+          class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span v-if="!loading">Accedi</span>
           <span v-else>Accesso in corso...</span>
         </button>
 
       </form>
+
+      <!-- Register -->
       <p class="text-sm text-center mt-6">
-  Non hai un account?
-  <router-link to="/register" class="text-blue-600 hover:underline">
-    Registrati
-  </router-link>
-</p>
+        Non hai un account?
+        <router-link to="/register" class="text-blue-600 hover:underline">
+          Registrati
+        </router-link>
+      </p>
 
     </div>
 

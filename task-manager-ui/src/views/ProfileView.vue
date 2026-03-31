@@ -106,6 +106,34 @@ onBeforeUnmount(() => {
     cropper.value.destroy()
   }
 })
+
+
+const passwordForm = ref({
+  current_password: "",
+  password: "",
+  password_confirmation: ""
+})
+
+const updatePassword = async () => {
+  try {
+    await api.put("/user/password", passwordForm.value)
+
+    alert("Password aggiornata con successo")
+
+    passwordForm.value = {
+      current_password: "",
+      password: "",
+      password_confirmation: ""
+    }
+
+  } catch (err) {
+    alert("Errore cambio password")
+    console.error(err)
+  }
+}
+
+
+
 </script>
 
 
@@ -222,6 +250,38 @@ onBeforeUnmount(() => {
     />
     <p v-else class="font-semibold">{{ currentUser.email }}</p>
   </div>
+
+  <div class="bg-gray-50 p-4 rounded-xl space-y-3 mt-6">
+  <h3 class="font-semibold">Change Password</h3>
+
+  <input
+    type="password"
+    v-model="passwordForm.current_password"
+    placeholder="Current Password"
+    class="w-full border rounded px-3 py-2"
+  />
+
+  <input
+    type="password"
+    v-model="passwordForm.password"
+    placeholder="New Password"
+    class="w-full border rounded px-3 py-2"
+  />
+
+  <input
+    type="password"
+    v-model="passwordForm.password_confirmation"
+    placeholder="Confirm New Password"
+    class="w-full border rounded px-3 py-2"
+  />
+
+  <button
+    @click="updatePassword"
+    class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+  >
+    Update Password
+  </button>
+</div>
 
   <button
     v-if="editing"
