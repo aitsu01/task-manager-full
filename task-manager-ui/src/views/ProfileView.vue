@@ -133,6 +133,11 @@ const updatePassword = async () => {
 }
 
 
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
+const showCurrentPassword = ref(false)
+
+
 
 </script>
 
@@ -148,149 +153,174 @@ const updatePassword = async () => {
       <!-- Avatar Section -->
       <div class="flex flex-col items-center gap-4">
 
-
-
-
         <!-- Preview con Cropper -->
         <div v-if="preview" class="w-64">
           <img ref="image" :src="preview" class="max-w-full rounded-lg" />
         </div>
 
-         <div v-else class="relative group w-28 h-28">
+        <!-- Avatar normale -->
+        <div v-else class="relative group w-28 h-28">
 
-  <!-- Avatar -->
-  <img
-    v-if="currentUser.avatar"
-    :src="`http://127.0.0.1:8000/storage/${currentUser.avatar}`"
-    class="w-28 h-28 rounded-full object-cover border-4 border-indigo-100 transition"
-  />
+          <img
+            v-if="currentUser?.avatar"
+            :src="`http://127.0.0.1:8000/storage/${currentUser.avatar}`"
+            class="w-28 h-28 rounded-full object-cover border-4 border-indigo-100"
+          />
 
-  <!-- Placeholder -->
-  <div
-    v-else
-    class="w-28 h-28 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-3xl font-bold"
-  >
-    {{ currentUser.name.charAt(0).toUpperCase() }}
-  </div>
-
-  <!-- Overlay -->
-  <label
-    class="absolute inset-0 bg-black bg-opacity-40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition cursor-pointer"
-  >
-    <span class="text-white text-sm">Edit</span>
-    <input
-      type="file"
-      class="hidden"
-      accept="image/jpeg,image/png,image/webp"
-      @change="handleFileChange"
-    />
-  </label>
-
-</div>
-
-
-
-
-       
-
-          <button
-            v-if="preview"
-            @click="uploadAvatar"
-            :disabled="uploading"
-            class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
+          <div
+            v-else
+            class="w-28 h-28 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-3xl font-bold"
           >
-            {{ uploading ? "Uploading..." : "Save Avatar" }}
-          </button>
+            {{ currentUser?.name?.charAt(0).toUpperCase() }}
+          </div>
+
+          <label
+            class="absolute inset-0 bg-black bg-opacity-40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition cursor-pointer"
+          >
+            <span class="text-white text-sm">Edit</span>
+            <input
+              type="file"
+              class="hidden"
+              accept="image/jpeg,image/png,image/webp"
+              @change="handleFileChange"
+            />
+          </label>
         </div>
+
+        <button
+          v-if="preview"
+          @click="uploadAvatar"
+          :disabled="uploading"
+          class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
+        >
+          {{ uploading ? "Uploading..." : "Save Avatar" }}
+        </button>
 
       </div>
 
       <!-- User Info -->
       <div class="mt-10 space-y-4">
+
         <div class="bg-gray-50 p-4 rounded-xl">
           <p class="text-sm text-gray-500">Name</p>
-          <p class="font-semibold">{{ currentUser.name }}</p>
+          <p class="font-semibold">{{ currentUser?.name }}</p>
         </div>
 
         <div class="bg-gray-50 p-4 rounded-xl">
           <p class="text-sm text-gray-500">Email</p>
-          <p class="font-semibold">{{ currentUser.email }}</p>
+          <p class="font-semibold">{{ currentUser?.email }}</p>
         </div>
+
       </div>
-     
 
-     <div class="mt-10 space-y-4">
+      <!-- Edit Profile -->
+      <div class="mt-10 space-y-4">
 
-  <div class="flex justify-between items-center">
-    <h2 class="text-lg font-semibold">Account Info</h2>
-    <button
-      @click="editing = !editing"
-      class="text-indigo-600 hover:underline"
-    >
-      {{ editing ? "Cancel" : "Edit" }}
-    </button>
-  </div>
+        <div class="flex justify-between items-center">
+          <h2 class="text-lg font-semibold">Account Info</h2>
+          <button
+            @click="editing = !editing"
+            class="text-indigo-600 hover:underline"
+          >
+            {{ editing ? "Cancel" : "Edit" }}
+          </button>
+        </div>
 
-  <div class="bg-gray-50 p-4 rounded-xl">
-    <p class="text-sm text-gray-500">Name</p>
-    <input
-      v-if="editing"
-      v-model="form.name"
-      class="w-full border rounded px-3 py-2"
-    />
-    <p v-else class="font-semibold">{{ currentUser.name }}</p>
-  </div>
+        <div class="bg-gray-50 p-4 rounded-xl">
+          <p class="text-sm text-gray-500">Name</p>
+          <input
+            v-if="editing"
+            v-model="form.name"
+            class="w-full border rounded px-3 py-2"
+          />
+          <p v-else class="font-semibold">{{ currentUser?.name }}</p>
+        </div>
 
-  <div class="bg-gray-50 p-4 rounded-xl">
-    <p class="text-sm text-gray-500">Email</p>
-    <input
-      v-if="editing"
-      v-model="form.email"
-      class="w-full border rounded px-3 py-2"
-    />
-    <p v-else class="font-semibold">{{ currentUser.email }}</p>
-  </div>
+        <div class="bg-gray-50 p-4 rounded-xl">
+          <p class="text-sm text-gray-500">Email</p>
+          <input
+            v-if="editing"
+            v-model="form.email"
+            class="w-full border rounded px-3 py-2"
+          />
+          <p v-else class="font-semibold">{{ currentUser?.email }}</p>
+        </div>
 
-  <div class="bg-gray-50 p-4 rounded-xl space-y-3 mt-6">
-  <h3 class="font-semibold">Change Password</h3>
+        <button
+          v-if="editing"
+          @click="updateProfile"
+          class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
+        >
+          Save Changes
+        </button>
 
-  <input
-    type="password"
-    v-model="passwordForm.current_password"
-    placeholder="Current Password"
-    class="w-full border rounded px-3 py-2"
-  />
+      </div>
 
-  <input
-    type="password"
-    v-model="passwordForm.password"
-    placeholder="New Password"
-    class="w-full border rounded px-3 py-2"
-  />
+      <!-- Change Password -->
+      <div class="bg-gray-50 p-6 rounded-xl space-y-4 mt-8">
 
-  <input
-    type="password"
-    v-model="passwordForm.password_confirmation"
-    placeholder="Confirm New Password"
-    class="w-full border rounded px-3 py-2"
-  />
+        <h3 class="font-semibold text-gray-800">Change Password</h3>
 
-  <button
-    @click="updatePassword"
-    class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
-  >
-    Update Password
-  </button>
-</div>
+        <!-- Current Password -->
+        <div class="relative">
+          <input
+            v-model="passwordForm.current_password"
+            :type="showCurrentPassword ? 'text' : 'password'"
+            placeholder="Current Password"
+            class="w-full border rounded px-3 py-2 pr-10"
+          />
+          <button
+            type="button"
+            @click="showCurrentPassword = !showCurrentPassword"
+            class="absolute right-3 top-2 text-gray-500 text-sm"
+          >
+            {{ showCurrentPassword ? "Nascondi" : "Mostra" }}
+          </button>
+        </div>
 
-  <button
-    v-if="editing"
-    @click="updateProfile"
-    class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
-  >
-    Save Changes
-  </button>
+        <!-- New Password -->
+        <div class="relative">
+          <input
+            v-model="passwordForm.password"
+            :type="showPassword ? 'text' : 'password'"
+            placeholder="New Password"
+            class="w-full border rounded px-3 py-2 pr-10"
+          />
+          <button
+            type="button"
+            @click="showPassword = !showPassword"
+            class="absolute right-3 top-2 text-gray-500 text-sm"
+          >
+            {{ showPassword ? "Nascondi" : "Mostra" }}
+          </button>
+        </div>
 
-</div>
+        <!-- Confirm -->
+        <div class="relative">
+          <input
+            v-model="passwordForm.password_confirmation"
+            :type="showConfirmPassword ? 'text' : 'password'"
+            placeholder="Confirm New Password"
+            class="w-full border rounded px-3 py-2 pr-10"
+          />
+          <button
+            type="button"
+            @click="showConfirmPassword = !showConfirmPassword"
+            class="absolute right-3 top-2 text-gray-500 text-sm"
+          >
+            {{ showConfirmPassword ? "Nascondi" : "Mostra" }}
+          </button>
+        </div>
+
+        <button
+          @click="updatePassword"
+          class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
+        >
+          Update Password
+        </button>
+
+      </div>
+
+    </div>
   </MainLayout>
 </template>

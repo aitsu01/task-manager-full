@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
+use App\Notifications\PasswordChangedNotification;
+
 class UserController extends Controller
 {
     public function updateAvatar(Request $request)
@@ -59,18 +61,15 @@ public function updatePassword(Request $request)
     $user = $request->user();
 
     if (!Hash::check($request->current_password, $user->password)) {
-        throw ValidationException::withMessages([
-            'current_password' => ['Password attuale non corretta.'],
-        ]);
+        return response()->json(['message' => 'Password attuale errata'], 400);
     }
 
-    $user->update([
-        'password' => Hash::make($request->password)
-    ]);
+    $user->password = Hash::make($request->password);
+    $user->save();
 
-    return response()->json([
-        'message' => 'Password aggiornata con successo'
-    ]);
+    $user->notify(new PasswordChangedNotification());
+
+    return response()->json(['message' => 'Password aggiornata']);
 }
 
 

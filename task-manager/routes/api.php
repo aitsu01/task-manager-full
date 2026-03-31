@@ -17,6 +17,8 @@ use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\MyTaskController;
 use App\Http\Controllers\Api\UserController;
 
+use App\Notifications\PasswordChangedNotification;
+
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
@@ -45,14 +47,24 @@ Route::post('/reset-password', function (Request $request) {
         'password' => 'required|min:8|confirmed',
     ]);
 
-    $status = Password::reset(
+    /*$status = Password::reset(
         $request->only('email', 'password', 'password_confirmation', 'token'),
         function ($user, $password) {
             $user->forceFill([
                 'password' => Hash::make($password)
             ])->save();
         }
-    );
+    );*/
+    $status = Password::reset(
+    $request->only('email', 'password', 'password_confirmation', 'token'),
+    function ($user, $password) {
+        $user->forceFill([
+            'password' => Hash::make($password)
+        ])->save();
+
+        $user->notify(new PasswordChangedNotification());
+    }
+);
 
     return $status === Password::PASSWORD_RESET
         ? response()->json(['message' => __($status)])
