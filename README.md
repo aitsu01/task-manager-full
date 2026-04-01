@@ -1,108 +1,144 @@
-This project was built to demonstrate:
+#  Task Manager SaaS
 
-Clean backend architecture
-Real-world SaaS workflow
-Authentication & role management
-Full-stack integration
-Professional repository structure
-
-
-
-
-
-#  Task Manager SaaS (Full Stack)
-
-Full Stack SaaS-style Task Management application built with:
-
--  Laravel 11 (API Backend)
--  Laravel Sanctum (Authentication)
--  Service Layer Architecture
--  Vue 3 + Vite (Frontend SPA)
--  TailwindCSS (UI)
--  MySQL Database
+A modern collaborative Task Manager built with Laravel and Vue 3, designed as a SaaS-style application with role-based access control and real-world project workflows.
 
 ---
 
-##  Features
+##  Overview
 
-###  Authentication
-- Login / Logout
-- Registration with approval workflow
-- Token-based authentication (Sanctum)
-- Route protection (SPA guards)
-- Global 401 auto-redirect
+This project is a full-stack SaaS application that allows teams to:
 
----
+* Create and manage projects
+* Collaborate with team members
+* Assign and track tasks
+* Control access via roles and permissions
+* Monitor progress through dashboards
 
-###  Dashboard
-- Total projects
-- Total tasks
-- Completion rate (%)
-- Tasks per status (with percentages)
-- Overdue tasks counter
-- Weekly productivity trend (last 7 days)
-- Recent tasks list
+It was developed as a **portfolio project for a Laravel/Vue internship**, focusing on clean architecture and real-world patterns.
 
 ---
 
-###  Admin Panel
-- View all users
-- Approve / Reject new registrations
-- Assign roles (Admin / User / Manager)
-- Update existing user roles
-- Delete users
-- Status badges (pending / approved / rejected)
+##  Tech Stack
+
+### Backend
+
+* PHP (Laravel 12)
+* MySQL
+* REST API
+* Laravel Sanctum (authentication)
+* Policy-based authorization
+* Service Layer architecture
+
+### Frontend
+
+* Vue 3 (Composition API)
+* Vue Router
+* Axios
+* Tailwind CSS
 
 ---
 
+##  Authentication & Authorization
 
-##  Collaboration System
+* Token-based authentication using Laravel Sanctum
+* Role-based access control:
 
-Projects now support multi-user collaboration:
+### Global Roles
 
-- Owner / Manager / Member roles
-- Role-based permissions (Laravel Policies)
-- Add / remove members
-- Update member roles
-- Admin override access
+* `admin`
+* `user`
 
-Built with:
-- Many-to-many pivot (project_user)
-- Policy-driven authorization
-- Service Layer architecture
+### Project Roles
 
-###  Architecture
-
-#### Backend
-- RESTful API
-- Service Layer (DashboardService, ProjectService, TaskService)
-- Role-based access control
-- Clean separation of concerns
-- Eloquent relationships
-- Soft-delete ready structure
-
-#### Frontend
-- Vue 3 Composition API
-- Axios service abstraction
-- Route guards
-- SaaS-style layout with persistent sidebar
-- Role-based UI rendering
+* `owner`
+* `manager`
+* `member`
 
 ---
 
-##  Project Structure
+##  Projects
 
+* Each project has a creator (owner)
+* Users can be invited as members
+* Roles are stored in a pivot table (`project_user`)
 
+### Permissions
 
+| Action                | Who can do it |
+| --------------------- | ------------- |
+| View project          | Members       |
+| Update/Delete project | Owner         |
+| Manage members        | Owner / Admin |
 
+---
 
-task-manager-full/
-│
-├── task-manager-api/ # Laravel Backend
-│
-└── task-manager-ui/ # Vue 3 Frontend
+##  Tasks
 
+* Tasks belong to a project
+* Can be assigned to users
+* Support lifecycle:
 
+```
+todo → doing → done
+```
+
+### Task Workflow
+
+* All members can create tasks
+* Only **owner/admin** can:
+
+  * Approve tasks
+  * Change status
+  * Delete tasks
+
+---
+
+##  Dashboard
+
+Includes:
+
+* Total projects
+* Total tasks
+* Completion rate
+* Tasks per status
+* Overdue tasks
+* Weekly completed tasks
+
+---
+
+##  Project Members
+
+* Add members via email
+* Assign roles (manager/member)
+* Remove members
+* Owner cannot be removed
+
+---
+
+##  Key Features
+
+* SaaS-style UI
+* Role-based permissions (backend + frontend)
+* Task approval workflow
+* Real-time UI updates (optimistic updates)
+* Error handling and validation
+* Clean separation of concerns (Service Layer)
+
+---
+
+##  API Endpoints (Examples)
+
+```
+GET    /projects
+POST   /projects
+GET    /projects/{id}
+GET    /projects/{id}/tasks
+POST   /projects/{id}/tasks
+PATCH  /projects/{id}/tasks/{task}
+PATCH  /projects/{id}/tasks/{task}/status
+GET    /projects/{id}/members
+POST   /projects/{id}/members
+```
 
 ---
 
@@ -111,31 +147,51 @@ task-manager-full/
 ### Backend
 
 ```bash
-cd task-manager-api
+git clone https://github.com/aitsu01/task-manager-full
+cd task-manager
 composer install
 cp .env.example .env
 php artisan key:generate
 php artisan migrate
 php artisan serve
+```
 
+### Frontend
 
-
-
-
+```bash
+cd task-manager-ui
+npm install
+npm run dev
+```
 
 ---
 
-##  Installation
+##  Future Improvements
 
-### Backend
+* Kanban board (drag & drop)
+* Notifications system
+* Task comments
+* Activity logs
+* Advanced filtering
+* Per-project dashboards
 
-```bash
-cd task-manager-api
-composer install
-cp .env.example .env
-php artisan key:generate
-php artisan migrate
-php artisan serve
+---
+
+##  Author
+
+Developed by **aitsu01** as a portfolio project for a Laravel/Vue internship.
+
+---
+
+##  Notes
+
+This project was built with a focus on:
+
+* Clean architecture
+* Scalability
+* Real-world SaaS patterns
+
+---
 
 
 
