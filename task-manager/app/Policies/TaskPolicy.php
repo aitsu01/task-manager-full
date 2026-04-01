@@ -4,63 +4,83 @@ namespace App\Policies;
 
 use App\Models\Task;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class TaskPolicy
 {
     /**
-     * Determine whether the user can view any models.
+     * View any tasks (non necessario nel tuo caso)
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
-     * Determine whether the user can view the model.
+     * View singola task
      */
     public function view(User $user, Task $task): bool
     {
-        return false;
+        // Admin globale
+        if ($user->isAdmin()) return true;
+
+        // membro del progetto
+        return $task->project->users()
+            ->where('user_id', $user->id)
+            ->exists();
     }
 
     /**
-     * Determine whether the user can create models.
+     * Creare task (membri del progetto)
      */
     public function create(User $user): bool
     {
-        return false;
+        // qui non hai il project → gestisci nel controller
+        return true;
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
     public function update(User $user, Task $task): bool
-    {
-        return false;
-    }
+{
+    if ($user->isAdmin()) return true;
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Task $task): bool
-    {
-        return false;
-    }
+    // SOLO OWNER può modificare task
+    return $task->project->users()
+        ->where('user_id', $user->id)
+        ->wherePivot('role', 'owner')
+        ->exists();
+}
 
-    /**
-     * Determine whether the user can restore the model.
-     */
+public function delete(User $user, Task $task): bool
+{
+    if ($user->isAdmin()) return true;
+
+    return $task->project->users()
+        ->where('user_id', $user->id)
+        ->wherePivot('role', 'owner')
+        ->exists();
+}
     public function restore(User $user, Task $task): bool
     {
         return false;
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
     public function forceDelete(User $user, Task $task): bool
     {
         return false;
     }
+public function updateStatus(User $user, Task $task): bool
+{
+    if ($user->isAdmin()) return true;
+
+    return $task->project->users()
+        ->where('user_id', $user->id)
+        ->wherePivot('role', 'owner')
+        ->exists();
+}
+
+
+
+
+
+
+
 }

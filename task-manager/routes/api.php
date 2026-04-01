@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\ProjectMemberController;
 use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\MyTaskController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\NotificationController;
 
 use App\Notifications\PasswordChangedNotification;
 
@@ -113,7 +114,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index']);
     Route::get('/my-tasks', [MyTaskController::class, 'index']);
-    Route::apiResource('tasks', TaskController::class);
+    Route::apiResource('tasks', MyTaskController::class);
+
+
+    
+
+    Route::patch(
+    '/projects/{project}/tasks/{task}/status',
+    [ProjectTaskController::class, 'updateStatus']
+);
 
     /*
     |--------------------------------------------------------------------------

@@ -1,5 +1,6 @@
 <?php
 
+
 namespace App\Services;
 
 use App\Models\Project;
@@ -11,12 +12,9 @@ class DashboardService
     {
         $isAdmin = $user->role && $user->role->name === 'admin';
 
-        // PROJECT QUERY
         $projectQuery = Project::query();
 
-        /*if (!$isAdmin) {
-            $projectQuery->where('user_id', $user->id);
-        }*/
+        
 
             if (!$isAdmin) {
     $projectQuery->whereHas('users', function ($q) use ($user) {
@@ -26,14 +24,10 @@ class DashboardService
 
         $totalProjects = $projectQuery->count();
 
-        // TASK BASE QUERY
+       
         $baseTaskQuery = Task::query();
 
-       /* if (!$isAdmin) {
-            $baseTaskQuery->whereHas('project', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
-            });
-        }*/
+      
 
         if (!$isAdmin) {
     $baseTaskQuery->whereHas('project.users', function ($q) use ($user) {
@@ -81,8 +75,10 @@ class DashboardService
 
         $recentTasks = (clone $baseTaskQuery)
             ->latest()
-            ->limit(5)
-            ->get(['id', 'title', 'status', 'due_date']);
+            ->limit(10)
+            ->get(['id', 'title', 'status', 'due_date','project_id']);
+
+       
 
 
         // WEEKLY COMPLETED (ultimi 7 giorni)

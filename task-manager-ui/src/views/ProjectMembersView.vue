@@ -2,14 +2,14 @@
 import { ref, onMounted, computed } from "vue"
 import { useRoute } from "vue-router"
 import api from "../services/api"
-import MainLayout from "../layouts/MainLayout.vue"
 
 const route = useRoute()
 const projectId = route.params.id
 
 const members = ref([])
 const loading = ref(true)
-const newMemberId = ref("")
+
+const newMemberEmail = ref("")
 const newRole = ref("member")
 
 const currentUser = JSON.parse(localStorage.getItem("user"))
@@ -28,7 +28,6 @@ const fetchMembers = async () => {
 
 /* ---------------- PERMISSIONS ---------------- */
 const canManageMembers = computed(() => {
-  // Admin globale (role_id = 1)
   if (currentUser?.role_id === 1) return true
 
   const me = members.value.find(
@@ -40,21 +39,32 @@ const canManageMembers = computed(() => {
 
 /* ---------------- ADD MEMBER ---------------- */
 const addMember = async () => {
-  if (!newMemberId.value) return
+  if (!newMemberEmail.value) return
+
+  // evita aggiungere sé stesso
+  if (newMemberEmail.value === currentUser.email) {
+    alert("Sei già nel progetto")
+    return
+  }
 
   try {
     await api.post(`/projects/${projectId}/members`, {
-      user_id: newMemberId.value,
+      email: newMemberEmail.value,
       role: newRole.value
     })
 
-    newMemberId.value = ""
+    alert("Membro aggiunto con successo")
+
+    newMemberEmail.value = ""
     newRole.value = "member"
+
     fetchMembers()
 
   } catch (err) {
-    if (err.response?.status === 400) {
-      alert("Utente già membro del progetto")
+    if (err.response?.status === 404) {
+      alert("Utente non trovato")
+    } else if (err.response?.status === 400) {
+      alert("Utente già membro")
     } else if (err.response?.status === 403) {
       alert("Non autorizzato")
     } else {
@@ -78,7 +88,7 @@ const updateRole = async (member) => {
 
 /* ---------------- REMOVE MEMBER ---------------- */
 const removeMember = async (member) => {
-  if (!confirm("Rimuovere questo membro?")) return
+  if (!confirm(`Rimuovere ${member.name}?`)) return
 
   try {
     await api.delete(`/projects/${projectId}/members/${member.id}`)
@@ -92,7 +102,7 @@ onMounted(fetchMembers)
 </script>
 
 <template>
-  <MainLayout>
+  
 
     <!-- HEADER -->
     <div class="flex justify-between items-center mb-10">
@@ -186,10 +196,10 @@ onMounted(fetchMembers)
 
       <div class="flex gap-4 items-center">
         <input
-          v-model="newMemberId"
-          placeholder="User ID"
-          class="border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 outline-none w-40"
-        />
+  v-model="newMemberEmail"
+  placeholder="Email utente"
+  class="border rounded px-3 py-2 w-64"
+/>
 
         <select
           v-model="newRole"
@@ -208,5 +218,5 @@ onMounted(fetchMembers)
       </div>
     </div>
 
-  </MainLayout>
+ 
 </template>

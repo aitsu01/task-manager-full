@@ -42,13 +42,19 @@ const routes = [
 
 {
   path: '/projects/:id',
-  component: ProjectDetailView
-},
-
-{
-  path: "/projects/:id/members",
-  name: "ProjectMembers",
-  component: () => import("../views/ProjectMembersView.vue")
+  component: () => import('../views/ProjectLayout.vue'),
+  children: [
+    {
+      path: '',
+      name: 'project.tasks',
+      component: () => import('../views/ProjectDetailView.vue')
+    },
+    {
+      path: 'members',
+      name: 'project.members',
+      component: () => import('../views/ProjectMembersView.vue')
+    }
+  ]
 },
 
 {
