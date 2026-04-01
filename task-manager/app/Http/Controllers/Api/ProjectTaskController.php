@@ -10,6 +10,7 @@ use App\Http\Resources\TaskResource;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Validation\Rule;
 use App\Services\TaskService;
+use Illuminate\Support\Facades\Notification;
 
 class ProjectTaskController extends Controller
 {
@@ -124,36 +125,39 @@ class ProjectTaskController extends Controller
         ]);
     }
 
-    /**
-     * 🔥 Update status (APPROVA / COMPLETA)
-     */
-    public function updateStatus(Request $request, Project $project, Task $task)
-    {
-        $this->authorize('view', $project);
+public function updateStatus(Request $request, Project $project, Task $task)
+{
+    $this->authorize('view', $project);
 
-        if (!$this->taskService->belongsToProject($task, $project)) {
-            abort(404);
-        }
-
-        $this->authorize('updateStatus', $task);
-
-        $request->validate([
-            'status' => 'required|in:todo,doing,done'
-        ]);
-
-        $task->status = $request->status;
-        $task->save();
-
-        // 🔥 MAIL DISABILITATE (per evitare errore 500)
-        // $members = $project->users()->get();
-        // foreach ($members as $member) {
-        //     Mail::to($member->email)
-        //         ->send(new TaskStatusUpdatedMail($task));
-        // }
-
-        return response()->json([
-            'message' => 'Status aggiornato',
-            'task' => $task
-        ]);
+    if (!$this->taskService->belongsToProject($task, $project)) {
+        abort(404);
     }
+
+    $this->authorize('updateStatus', $task);
+
+    $request->validate([
+        'status' => 'required|in:todo,doing,done'
+    ]);
+
+    // 🔥 SALVA STATO VECCHIO
+    $oldStatus = $task->status;
+
+    // 🔥 AGGIORNA
+    $task->status = $request->status;
+    $task->save();
+
+    // 🔥 NOTIFICHE
+    $members = $project->users()->get();
+
+    foreach ($members as $member) {
+        $member->notify(
+            new \App\Notifications\TaskStatusUpdatedNotification($task, $oldStatus)
+        );
+    }
+
+    return response()->json([
+        'message' => 'Status aggiornato',
+        'task' => $task
+    ]);
+}
 }

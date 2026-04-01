@@ -1,5 +1,6 @@
 <script setup>
 import { useRouter } from "vue-router"
+import NotificationsDropdown from "../components/NotificationsDropdown.vue"
 
 const router = useRouter()
 
@@ -33,10 +34,7 @@ const logout = () => {
       <!-- Navigation -->
       <nav class="flex-1 p-4 space-y-2">
 
-        <router-link
-          to="/dashboard"
-          class="block px-4 py-2 rounded hover:bg-gray-200"
-        >
+        <router-link to="/dashboard" class="block px-4 py-2 rounded hover:bg-gray-200">
           Dashboard
         </router-link>
 
@@ -49,15 +47,15 @@ const logout = () => {
         </router-link>
 
         <router-link to="/projects" class="block px-4 py-2 rounded hover:bg-gray-200">
-         Projects
+          Projects
         </router-link>
 
         <router-link
-  to="/profile"
-  class="block px-4 py-2 text-gray-700 hover:text-indigo-600"
->
-  Profile
-</router-link>
+          to="/profile"
+          class="block px-4 py-2 text-gray-700 hover:text-indigo-600"
+        >
+          Profile
+        </router-link>
 
       </nav>
 
@@ -73,10 +71,36 @@ const logout = () => {
 
     </aside>
 
-    <!-- CONTENT -->
-    <main class="flex-1 p-10">
-      <slot />
-    </main>
+    <!-- MAIN AREA -->
+    <div class="flex-1 flex flex-col">
+
+      <!-- 🔥 TOP BAR -->
+      <header class="bg-white shadow px-6 py-4 flex justify-between items-center">
+
+        <h1 class="font-semibold text-lg">
+          Task Manager
+        </h1>
+
+        <div class="flex items-center gap-4">
+
+          <!-- 🔔 NOTIFICATIONS -->
+          <NotificationsDropdown />
+
+          <!-- USER -->
+          <span class="text-sm text-gray-700">
+            {{ user?.name }}
+          </span>
+
+        </div>
+
+      </header>
+
+      <!-- PAGE CONTENT -->
+      <main class="p-10 flex-1">
+        <slot />
+      </main>
+
+    </div>
 
   </div>
 </template>

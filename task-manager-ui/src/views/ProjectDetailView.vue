@@ -45,12 +45,25 @@ const fetchTasks = async () => {
 
 /* ---------------- CREATE TASK ---------------- */
 const createTask = async () => {
-  if (!newTask.value.title) return
+  if (!newTask.value.title) {
+    alert("Inserisci un titolo")
+    return
+  }
 
   try {
-    const res = await api.post(`/projects/${projectId}/tasks`, newTask.value)
+    const payload = {
+      title: newTask.value.title,
+      description: newTask.value.description,
+      status: "todo",
+      due_date: newTask.value.due_date || null // 🔥 FIX CRITICO
+    }
 
-    // 🔥 nuova task sopra
+    console.log("PAYLOAD:", payload)
+
+    const res = await api.post(`/projects/${projectId}/tasks`, payload)
+
+    console.log("RISPOSTA:", res.data)
+
     tasks.value.unshift(res.data.data)
 
     newTask.value = {
@@ -61,7 +74,7 @@ const createTask = async () => {
     }
 
   } catch (err) {
-    console.error(err)
+    console.error("ERRORE BACKEND:", err.response?.data)
     alert("Errore creazione task")
   }
 }

@@ -10,6 +10,7 @@ use App\Http\Resources\ProjectResource;
 use App\Services\ProjectService;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Notifications\TaskStatusUpdatedNotification;
 
 class ProjectController extends Controller
 {

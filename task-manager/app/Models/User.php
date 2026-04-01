@@ -16,6 +16,7 @@ class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens,HasFactory, Notifiable;
+    
      
     
 
@@ -79,6 +80,13 @@ public function isAdmin()
 {
     return $this->role && $this->role->name === 'admin';
 }
+
+
+
+
+
+   
+
 
 
 

@@ -122,6 +122,19 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::patch('/projects/{project}/tasks/{task}/status', [ProjectTaskController::class, 'updateStatus']);
 
+
+
+Route::get('/notifications', function (Request $request) {
+    return $request->user()->notifications;
+});
+
+Route::post('/notifications/read/{id}', function ($id, Request $request) {
+    $notification = $request->user()->notifications()->findOrFail($id);
+    $notification->markAsRead();
+
+    return response()->json(['message' => 'ok']);
+});
+
     /*
     |--------------------------------------------------------------------------
     | ADMIN USERS
