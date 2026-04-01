@@ -119,10 +119,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     
 
-    Route::patch(
-    '/projects/{project}/tasks/{task}/status',
-    [ProjectTaskController::class, 'updateStatus']
-);
+
+Route::patch('/projects/{project}/tasks/{task}/status', [ProjectTaskController::class, 'updateStatus']);
 
     /*
     |--------------------------------------------------------------------------
