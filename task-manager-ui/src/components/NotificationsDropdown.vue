@@ -3,16 +3,54 @@ import { ref, onMounted } from "vue"
 import api from "../services/api"
 
 const notifications = ref([])
+const unreadCount = ref(0)
 const open = ref(false)
 
+import { useRouter } from "vue-router"
+
+const router = useRouter()
+
+/* ---------------- FETCH ---------------- */
 const fetchNotifications = async () => {
-  const res = await api.get("/notifications")
-  notifications.value = res.data
+  try {
+    const res = await api.get("/notifications")
+    notifications.value = res.data
+
+    //  conta non lette
+    unreadCount.value = res.data.filter(n => !n.read_at).length
+
+  } catch (err) {
+    console.error(err)
+  }
 }
 
-const markAsRead = async (id) => {
-  await api.post(`/notifications/read/${id}`)
-  notifications.value = notifications.value.filter(n => n.id !== id)
+/* ---------------- MARK AS READ ---------------- */
+
+
+const markAsRead = async (notification) => {
+  try {
+    await api.post(`/notifications/read/${notification.id}`)
+
+    //  QUI VA QUESTA RIGA
+    router.push(`/projects/${notification.data.project_id}?task=${notification.data.task_id}`)
+
+    // aggiorna lista
+    notifications.value = notifications.value.filter(n => n.id !== notification.id)
+    unreadCount.value--
+
+    // chiudi dropdown
+    open.value = false
+
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+
+
+/* ---------------- TOGGLE ---------------- */
+const toggleDropdown = () => {
+  open.value = !open.value
 }
 
 onMounted(fetchNotifications)
@@ -20,15 +58,17 @@ onMounted(fetchNotifications)
 
 <template>
   <div class="relative">
-    
-    <!-- ICON -->
-    <button @click="open = !open" class="relative text-xl">
+
+    <!-- 🔔 BUTTON -->
+    <button @click="toggleDropdown" class="relative text-xl">
       🔔
+
+      <!-- 🔴 BADGE -->
       <span
-        v-if="notifications.length"
-        class="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1 rounded-full"
+        v-if="unreadCount > 0"
+        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
       >
-        {{ notifications.length }}
+        {{ unreadCount }}
       </span>
     </button>
 
@@ -45,13 +85,10 @@ onMounted(fetchNotifications)
         v-for="n in notifications"
         :key="n.id"
         class="border-b py-2 text-sm cursor-pointer hover:bg-gray-50"
-        @click="markAsRead(n.id)"
+        @click="markAsRead(n)"
       >
         <p>
-          Task <strong>{{ n.data.task_title }}</strong>
-        </p>
-        <p class="text-gray-500 text-xs">
-          {{ n.data.old_status }} → {{ n.data.new_status }}
+          {{ n.data.message }}
         </p>
       </div>
     </div>

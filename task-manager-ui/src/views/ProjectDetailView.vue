@@ -12,6 +12,9 @@ const loading = ref(true)
 const error = ref(null)
 const updatingTaskId = ref(null)
 
+// 🔥 highlight task
+const highlightTaskId = ref(null)
+
 const currentUser = JSON.parse(localStorage.getItem("user"))
 
 const newTask = ref({
@@ -55,14 +58,10 @@ const createTask = async () => {
       title: newTask.value.title,
       description: newTask.value.description,
       status: "todo",
-      due_date: newTask.value.due_date || null // 🔥 FIX CRITICO
+      due_date: newTask.value.due_date || null
     }
 
-    console.log("PAYLOAD:", payload)
-
     const res = await api.post(`/projects/${projectId}/tasks`, payload)
-
-    console.log("RISPOSTA:", res.data)
 
     tasks.value.unshift(res.data.data)
 
@@ -74,12 +73,12 @@ const createTask = async () => {
     }
 
   } catch (err) {
-    console.error("ERRORE BACKEND:", err.response?.data)
+    console.error(err.response?.data)
     alert("Errore creazione task")
   }
 }
 
-/* ---------------- CHANGE STATUS (OWNER ONLY) ---------------- */
+/* ---------------- CHANGE STATUS ---------------- */
 const changeStatus = async (task, status) => {
   updatingTaskId.value = task.id
 
@@ -88,7 +87,6 @@ const changeStatus = async (task, status) => {
       status
     })
 
-    // update locale
     task.status = status
 
   } catch (err) {
@@ -129,6 +127,26 @@ onMounted(async () => {
 
   if (!error.value) {
     await fetchTasks()
+
+    // 🔥 highlight da notifica
+    if (route.query.task) {
+      highlightTaskId.value = parseInt(route.query.task)
+
+      setTimeout(() => {
+        const el = document.getElementById(`task-${highlightTaskId.value}`)
+        if (el) {
+          el.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+          })
+        }
+      }, 300)
+
+      // 🔥 PRO MAX → fade dopo 3 sec
+      setTimeout(() => {
+        highlightTaskId.value = null
+      }, 3000)
+    }
   }
 
   loading.value = false
@@ -137,7 +155,7 @@ onMounted(async () => {
 
 <template>
 
-  <!-- ERROR STATES -->
+  <!-- ERROR -->
   <div v-if="error === 'forbidden'" class="text-center mt-10">
     <h2 class="text-xl font-semibold text-red-600">
       Non hai accesso a questo progetto
@@ -159,7 +177,7 @@ onMounted(async () => {
       {{ project?.name }}
     </h1>
 
-    <!-- 🔥 ADD TASK (TUTTI I MEMBRI) -->
+    <!-- ADD TASK -->
     <div class="bg-white p-6 rounded-xl shadow mb-8">
       <h2 class="text-lg font-semibold mb-4">+ Nuova Task</h2>
 
@@ -200,7 +218,13 @@ onMounted(async () => {
       v-else
       v-for="task in tasks"
       :key="task.id"
-      class="bg-white p-6 rounded-xl shadow mb-4"
+      :id="`task-${task.id}`"
+      :class="[
+        'p-6 rounded-xl shadow mb-4 transition-all duration-500',
+        highlightTaskId === task.id
+          ? 'ring-2 ring-blue-500 bg-blue-50'
+          : 'bg-white'
+      ]"
     >
       <div class="flex justify-between items-center">
 
@@ -216,7 +240,6 @@ onMounted(async () => {
             Due: {{ task.due_date }}
           </div>
 
-          <!-- 🔥 LABEL -->
           <div
             v-if="task.status === 'todo'"
             class="text-xs text-yellow-600 mt-1"
@@ -228,40 +251,35 @@ onMounted(async () => {
         <!-- ACTIONS -->
         <div class="flex gap-3 items-center">
 
-          <!-- 👑 OWNER -->
+          <!-- OWNER -->
           <div v-if="isOwner()" class="flex gap-2">
 
-            <!-- APPROVA -->
             <button
               v-if="task.status === 'todo'"
               @click="changeStatus(task, 'doing')"
-              :disabled="updatingTaskId === task.id"
-              class="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600"
+              class="bg-blue-500 text-white px-3 py-1 rounded text-xs"
             >
               Approva
             </button>
 
-            <!-- COMPLETA -->
             <button
               v-if="task.status !== 'done'"
               @click="changeStatus(task, 'done')"
-              :disabled="updatingTaskId === task.id"
-              class="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700"
+              class="bg-green-600 text-white px-3 py-1 rounded text-xs"
             >
               Completa
             </button>
 
-            <!-- DELETE -->
             <button
               @click="deleteTask(task)"
-              class="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700"
+              class="bg-red-600 text-white px-3 py-1 rounded text-xs"
             >
               Elimina
             </button>
 
           </div>
 
-          <!-- 👤 MEMBER -->
+          <!-- MEMBER -->
           <span
             v-else
             class="text-sm px-2 py-1 rounded text-white"
